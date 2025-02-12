@@ -420,21 +420,20 @@ rs.Heartbeat:Connect(function()
         lastTipUpdate = currentTime
         fadeInProgress = true
 
-        local oldTip = currentTip
-        currentTip = currentTip % #tips + 1
+     local oldTip = currentTip
+     currentTip = currentTip % #tips + 1
 
-        local fadeOut = ts:Create(tip, TweenInfo.new(0.5), {TextTransparency = 1})
-        fadeOut.Completed:Connect(function()
-            tip.Text = tips[currentTip]
-            local fadeIn = ts:Create(tip, TweenInfo.new(0.5), {TextTransparency = 0})
-            fadeIn.Completed:Connect(function()
-                fadeInProgress = false
-            end)
-            fadeIn:Play()
-        end)
-        fadeOut:Play()
-    end)
-end)
+     local fadeOut = ts:Create(tip, TweenInfo.new(0.5), {TextTransparency = 1})
+     fadeOut.Completed:Connect(function()
+         tip.Text = tips[currentTip]
+         local fadeIn = ts:Create(tip, TweenInfo.new(0.5), {TextTransparency = 0})
+         fadeIn.Completed:Connect(function()
+             fadeInProgress = false
+         end)
+         fadeIn:Play()
+     end)
+     fadeOut:Play()
+ end
 
 local startTime = tick()
 local lastPhaseUpdate = 0
