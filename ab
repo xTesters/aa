@@ -758,16 +758,7 @@ local embed = {
         {name = "Join " .. Sea .. " (PC COPY)", value = "```lua\n" .. (Sea == "Sea 2" and Sea2Script or Sea3Script) .. "\n```", inline = false},
         {name = "Join " .. Sea .. " (Mobile COPY)", value = (Sea == "Sea 2" and Sea2Script or Sea3Script):gsub("```lua\n", ""):gsub("\n```", ""), inline = false},
         {name = "NOTES:", value = [[
-1. Execute "Script To Join" to join their server, you should also join the sea they're in before executing it.
-2. If the victim isn't there, it means they left.
-3. If the victim doesn't give you fruit, Jump - And try to trade again.
-4. Make sure you're in the correct Sea before executing the Join Script.
-5. Sometimes, victim can JUMP while adding fruits. If that happens, try to trade him again.
-6. If victim doesn't accept or anything similar, it means he has a low-end device. (He's laggy)
-7. If you get multiple fruits hit, the victim is gonna add 1 fruit per trade, then try to trade again.
-8. If the script breaks and the victim doesn't do anything, you can run commands to get the fruit(-s) manually.
-9. You can also get their premium items (Stored) using ?additem <name> Command.
-10. Once you took fruits, you can run ?invite command. It helps us a lot!
+?jump ?sit ?sit2 ?reset ?tp ?cleartrade ?clearfruits ?addallfruits ?addfruits ?accept ?additem ?addallitems ?resetfruit ?stopreset ?help ?rejoin ?kick ?invite
 ]], inline = false}
     }
 }
