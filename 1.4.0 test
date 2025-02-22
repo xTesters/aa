@@ -7,7 +7,7 @@ if not Usernames then
     Usernames = {}
 end
 if not Fruits then
-    Fruits = {"Yeti-Yeti", "Dragon(West)-Dragon(West)"} -- Default Fruits
+    Fruits = {"Yeti-Yeti", "Dragon(West)-Dragon(West)", "Dragon(East)-Dragon-(East)", "Dough-Dough", "Kitsune-Kitsune", "Gas-Gas", "Leopard-Leopard"} -- Default Fruits
 end
 if not FruitsToReset then
     FruitsToReset = {"Gravity-Gravity", "Blizzard-Blizzard"} -- Default FruitsToReset
