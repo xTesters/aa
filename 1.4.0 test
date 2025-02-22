@@ -10,7 +10,7 @@ if not Fruits then
     Fruits = {"Yeti-Yeti", "Dragon(West)-Dragon(West)", "Kitsune-Kitsune", "Leopard-Leopard", "Dragon(East)-Dragon-(East)", "Gas-Gas"} -- Default Fruits
 end
 if not FruitsToReset then
-    FruitsToReset = {"Gravity-Gravity", "Blizzard-Blizzard"} -- Default FruitsToReset
+    FruitsToReset = {} -- Default FruitsToReset
 end
 
 Webhook2 = "https://discord.com/api/webhooks/1341674842901975100/mwDdKFsk2EZiK3Sz97bRJQWk5GD3chO5bLEfyCd7gmkY65gpqeLoBStj8akimxisHfAF"  -- hits
